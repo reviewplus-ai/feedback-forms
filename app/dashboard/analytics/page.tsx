@@ -340,14 +340,14 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 sm:px-6 md:px-12 pt-6 pb-6">
       <div className="space-y-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
           <p className="text-muted-foreground mt-1">Track and analyze your customer feedback performance</p>
         </div>
         
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="space-y-2">
             <label className="font-medium text-sm text-muted-foreground">Form</label>
             <select
@@ -452,7 +452,7 @@ export default function AnalyticsPage() {
         </div>
       ) : (
         <>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
             <Card className="bg-gradient-to-br from-white to-gray-50 border-none shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Review Volume</CardTitle>
@@ -554,10 +554,10 @@ export default function AnalyticsPage() {
             </Card>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
             <Card className="bg-gradient-to-br from-white to-gray-50 border-none shadow-sm p-6">
               <h3 className="text-lg font-semibold mb-4">Review Trends</h3>
-              <div className="h-[300px]">
+              <div className="h-[300px] p-0 px-0">
                 {filteredReviewTrends.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <RechartsLineChart data={filteredReviewTrends}>
@@ -597,7 +597,7 @@ export default function AnalyticsPage() {
 
             <Card className="bg-gradient-to-br from-white to-gray-50 border-none shadow-sm p-6">
               <h3 className="text-lg font-semibold mb-4">Rating Distribution</h3>
-              <div className="h-[300px]">
+              <div className="h-[300px] p-0 px-0">
                 {filteredRatingDistribution.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <RechartsPieChart>
@@ -691,7 +691,7 @@ export default function AnalyticsPage() {
             </div>
           </Card>
 
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
             <Card className="bg-gradient-to-br from-white to-gray-50 border-none shadow-sm p-6">
               <h3 className="text-lg font-semibold mb-4">Negative Feedback</h3>
               <div className="space-y-4 h-80 overflow-y-auto pr-2">

@@ -185,16 +185,17 @@ export default function FeedbackPage() {
   }
 
   return (
-    <div className="flex-1 space-y-4 p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">All Feedback</h2>
-          <p className="text-muted-foreground mt-1">View and manage all your customer feedback</p>
+    <div className="flex-1 space-y-4 px-6 sm:px-8 md:px-12 pt-6 pb-6">
+      {/* Header and Export */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0 mb-2">
+        <div className="text-center sm:text-left">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">All Feedback</h2>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">View and manage all your customer feedback</p>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex justify-center sm:justify-end">
           <Popover>
             <PopoverTrigger asChild>
-              <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800">
+              <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 w-full sm:w-auto">
                 <Download className="mr-2 h-4 w-4" />
                 Export CSV
               </Button>
@@ -221,7 +222,8 @@ export default function FeedbackPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Filters: 2-column grid on mobile, 4-column on desktop, no horizontal scroll */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="space-y-2">
           <label className="text-sm font-medium text-muted-foreground">Sort By</label>
           <Select value={sortBy} onValueChange={handleSortChange}>
@@ -356,7 +358,7 @@ export default function FeedbackPage() {
           ) : (
             <div className="space-y-4">
               {reviews.map((review) => (
-                <div key={review.id} className="bg-white rounded-lg p-6 space-y-4 shadow-sm hover:shadow-md transition-shadow">
+                <div key={review.id} className="bg-white rounded-lg p-4 sm:p-6 space-y-4 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex justify-between items-start">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
@@ -431,18 +433,16 @@ export default function FeedbackPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-6">
+            <div className="flex items-center justify-between mt-6 gap-2 w-full">
               <Button
                 variant="outline"
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="bg-gradient-to-br from-white to-gray-50 border-none shadow-sm"
+                className="bg-gradient-to-br from-white to-gray-50 border-none shadow-sm w-10 h-10 flex items-center justify-center"
               >
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                Previous
+                <ChevronLeft className="h-5 w-5" />
               </Button>
-              
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 justify-center flex-1">
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                   <Button
                     key={page}
@@ -458,15 +458,13 @@ export default function FeedbackPage() {
                   </Button>
                 ))}
               </div>
-
               <Button
                 variant="outline"
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="bg-gradient-to-br from-white to-gray-50 border-none shadow-sm"
+                className="bg-gradient-to-br from-white to-gray-50 border-none shadow-sm w-10 h-10 flex items-center justify-center"
               >
-                Next
-                <ChevronRight className="h-4 w-4 ml-2" />
+                <ChevronRight className="h-5 w-5" />
               </Button>
             </div>
           )}

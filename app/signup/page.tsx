@@ -76,6 +76,12 @@ export default function SignupPage() {
               </svg>
               {loading ? 'Signing up...' : 'Continue with Google'}
             </button>
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              By continuing, you agree to our
+              <Link href="/legal/terms" className="underline hover:text-primary mx-1">Terms of Service</Link>
+              and
+              <Link href="/legal/privacy-policy" className="underline hover:text-primary mx-1">Privacy Policy</Link>.
+            </p>
 
             {error && (
               <div className="rounded-lg bg-destructive/10 p-4">
