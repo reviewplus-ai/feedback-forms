@@ -3,6 +3,7 @@
 import { QRCodeSVG } from 'qrcode.react'
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
+import { Copy } from 'lucide-react'
 
 interface FormQRCodeProps {
   formUrl: string
@@ -75,7 +76,17 @@ export function FormQRCode({ formUrl }: FormQRCodeProps) {
         </div>
         <div className="text-center">
           <p className="text-sm text-gray-500 mb-2">Scan to access the form</p>
-          <p className="text-sm text-gray-600 break-all">{formUrl}</p>
+          <div className="flex items-center gap-3 justify-center">
+            <span className="text-sm text-gray-700 break-all hover:underline cursor-pointer" title={formUrl}>{formUrl}</span>
+            <button
+              type="button"
+              className="p-2 rounded hover:bg-gray-100"
+              onClick={() => {navigator.clipboard.writeText(formUrl); if (typeof window !== 'undefined') {import('sonner').then(({ toast }) => toast.success('Link copied!'))}}}
+              title="Copy link"
+            >
+              <Copy className="h-5 w-5 text-gray-500" />
+            </button>
+          </div>
         </div>
         <Button
           onClick={handleDownload}

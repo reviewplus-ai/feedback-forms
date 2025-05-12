@@ -138,20 +138,20 @@ export default async function FormDetailsPage({
   const negativeReviews = form.reviews?.filter((review: Review) => review.rating < form.rating_threshold).length || 0
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">{form.name}</h1>
-          <p className="text-muted-foreground mt-1">{form.company_name}</p>
+    <div className="max-w-full px-2 sm:px-4 md:px-8 py-6 mx-auto">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold truncate" title={form.name}>{form.name}</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base truncate" title={form.company_name}>{form.company_name}</p>
         </div>
-        <div className="flex gap-3">
-          <Button variant="outline" className="gap-2" asChild>
+        <div className="hidden sm:flex flex-col gap-2 w-full sm:w-auto sm:flex-row sm:gap-3">
+          <Button variant="outline" className="w-full sm:w-auto gap-2" asChild>
             <Link href={formUrl} target="_blank">
               <Eye className="h-4 w-4" />
               View Live Form
             </Link>
           </Button>
-          <Button variant="outline" className="gap-2" asChild>
+          <Button variant="outline" className="w-full sm:w-auto gap-2" asChild>
             <Link href={`/dashboard/forms/${id}/edit`}>
               <Edit className="h-4 w-4" />
               Edit Form
@@ -161,8 +161,8 @@ export default async function FormDetailsPage({
       </div>
 
       {/* Review Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-gradient-to-br from-white to-gray-50 border-none rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-gradient-to-br from-white to-gray-50 border-none rounded-lg p-4 sm:p-6 shadow-sm hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-medium text-muted-foreground">Total Reviews</h3>
@@ -173,7 +173,7 @@ export default async function FormDetailsPage({
             </div>
           </div>
         </div>
-        <div className="bg-gradient-to-br from-white to-gray-50 border-none rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200">
+        <div className="bg-gradient-to-br from-white to-gray-50 border-none rounded-lg p-4 sm:p-6 shadow-sm hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-medium text-muted-foreground">Average Rating</h3>
@@ -184,7 +184,7 @@ export default async function FormDetailsPage({
             </div>
           </div>
         </div>
-        <div className="bg-gradient-to-br from-white to-gray-50 border-none rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200">
+        <div className="bg-gradient-to-br from-white to-gray-50 border-none rounded-lg p-4 sm:p-6 shadow-sm hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-medium text-muted-foreground">Positive Reviews</h3>
@@ -195,7 +195,7 @@ export default async function FormDetailsPage({
             </div>
           </div>
         </div>
-        <div className="bg-gradient-to-br from-white to-gray-50 border-none rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200">
+        <div className="bg-gradient-to-br from-white to-gray-50 border-none rounded-lg p-4 sm:p-6 shadow-sm hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-medium text-muted-foreground">Negative Reviews</h3>
@@ -209,12 +209,12 @@ export default async function FormDetailsPage({
       </div>
 
       {/* Form Settings */}
-      <div className="bg-gradient-to-br from-white to-gray-50 border-none rounded-lg p-6 mb-8 shadow-sm">
+      <div className="bg-gradient-to-br from-white to-gray-50 border-none rounded-lg p-4 sm:p-6 mb-6 shadow-sm">
         <div className="flex items-center gap-2 mb-6">
           <Settings className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-xl font-semibold">Form Settings</h2>
         </div>
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
           <div className="space-y-4">
             <div>
               <h3 className="text-sm font-medium text-muted-foreground">Welcome Message</h3>
@@ -261,7 +261,7 @@ export default async function FormDetailsPage({
             </div>
           </div>
           {form.negative_redirect_type === 'internal' && (
-            <div className="md:col-span-2">
+            <div className="sm:col-span-2">
               <h3 className="text-sm font-medium text-muted-foreground mb-2">Negative Feedback Options</h3>
               <div className="grid gap-2">
                 {form.negative_feedback_questions?.map((question: string, index: number) => (
@@ -279,11 +279,11 @@ export default async function FormDetailsPage({
       </div>
 
       {/* QR Code and Form ID */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
         <FormQRCode formUrl={formUrl} />
         <div className="space-y-6">
           <FormIdSection formId={form.id} />
-          <div className="bg-gradient-to-br from-white to-gray-50 border-none rounded-lg p-6 shadow-sm">
+          <div className="bg-gradient-to-br from-white to-gray-50 border-none rounded-lg p-4 sm:p-6 shadow-sm">
             <h2 className="text-xl font-semibold mb-4">Form Actions</h2>
             <div className="flex flex-col gap-3">
               <Button variant="outline" className="w-full justify-start gap-2" asChild>

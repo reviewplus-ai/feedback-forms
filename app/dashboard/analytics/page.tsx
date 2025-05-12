@@ -20,6 +20,18 @@ const MINIMAL_COLORS = {
   positive: '#34D399' // green
 }
 
+// Add a mobile detection hook
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+  return isMobile;
+}
+
 export default function AnalyticsPage() {
   const [dateRange, setDateRange] = useState<DateRange>()
   const [timeRange, setTimeRange] = useState('7d')
@@ -30,6 +42,7 @@ export default function AnalyticsPage() {
   const [feedbackAnalysis, setFeedbackAnalysis] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [selectedFormId, setSelectedFormId] = useState<string | null>(null)
+  const isMobile = useIsMobile();
 
   const clearAnalyticsData = () => {
     setMetrics(null)
@@ -339,11 +352,33 @@ export default function AnalyticsPage() {
     return `${value > 0 ? '+' : ''}${Math.round(value)}%`
   }
 
+  const renderCustomAxisTick = (props: any) => {
+    const { x, y, payload } = props;
+    const label = String(payload.value);
+    const isLong = label.length > 8;
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <text
+          x={0}
+          y={0}
+          dy={16}
+          textAnchor="end"
+          fill="#6B7280"
+          fontSize={isMobile ? 9 : 12}
+          style={{ pointerEvents: 'all', cursor: isLong ? 'pointer' : 'default' }}
+        >
+          <title>{label}</title>
+          {isLong ? label.slice(0, 8) + '…' : label}
+        </text>
+      </g>
+    );
+  };
+
   return (
-    <div className="space-y-6 px-4 sm:px-6 md:px-12 pt-6 pb-6">
+    <div className="flex-1 space-y-4 px-2 sm:px-4 md:px-8 pt-4 pb-6">
       <div className="space-y-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Analytics</h1>
           <p className="text-muted-foreground mt-1">Track and analyze your customer feedback performance</p>
         </div>
         
@@ -452,7 +487,7 @@ export default function AnalyticsPage() {
         </div>
       ) : (
         <>
-          <div className="grid gap-4 grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
             <Card className="bg-gradient-to-br from-white to-gray-50 border-none shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Review Volume</CardTitle>
@@ -554,11 +589,11 @@ export default function AnalyticsPage() {
             </Card>
           </div>
 
-          <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
-            <Card className="bg-gradient-to-br from-white to-gray-50 border-none shadow-sm p-6">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+            <Card className="bg-gradient-to-br from-white to-gray-50 border-none shadow-sm p-3 sm:p-4 md:p-6">
               <h3 className="text-lg font-semibold mb-4">Review Trends</h3>
-              <div className="h-[300px] p-0 px-0">
-                {filteredReviewTrends.length > 0 ? (
+              <div className="h-[250px] sm:h-[300px] p-0 overflow-x-auto">
+                <div style={isMobile ? { transform: 'translateX(-25px)', width: 342, height: 250 } : { width: '100%', height: '100%' }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <RechartsLineChart data={filteredReviewTrends}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
@@ -566,8 +601,9 @@ export default function AnalyticsPage() {
                         dataKey="created_at"
                         tickFormatter={(value) => format(new Date(value), 'MMM d')}
                         stroke="#6B7280"
+                        tick={{ fontSize: 12 }}
                       />
-                      <YAxis stroke="#6B7280" />
+                      <YAxis stroke="#6B7280" tick={{ fontSize: 12 }} />
                       <Tooltip
                         labelFormatter={(value) => format(new Date(value), 'MMM d, yyyy')}
                         contentStyle={{ 
@@ -587,114 +623,111 @@ export default function AnalyticsPage() {
                       />
                     </RechartsLineChart>
                   </ResponsiveContainer>
-                ) : (
-                  <div className="flex items-center justify-center h-full text-muted-foreground">
-                    No review trend data available
-                  </div>
-                )}
+                </div>
               </div>
             </Card>
 
-            <Card className="bg-gradient-to-br from-white to-gray-50 border-none shadow-sm p-6">
+            <Card className="bg-gradient-to-br from-white to-gray-50 border-none shadow-sm p-3 sm:p-4 md:p-6">
               <h3 className="text-lg font-semibold mb-4">Rating Distribution</h3>
-              <div className="h-[300px] p-0 px-0">
-                {filteredRatingDistribution.length > 0 ? (
+              <div className="h-[250px] sm:h-[300px] p-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RechartsPieChart>
+                    <Pie
+                      data={filteredRatingDistribution}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {filteredRatingDistribution.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value: number) => [`${value} reviews`, 'Count']}
+                      contentStyle={{ 
+                        borderRadius: 8, 
+                        background: '#fff', 
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                        border: 'none'
+                      }}
+                    />
+                  </RechartsPieChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+          </div>
+
+          <div className="overflow-x-auto">
+            <Card className="bg-gradient-to-br from-white to-gray-50 border-none shadow-sm p-3 sm:p-4 md:p-6 min-w-[340px]">
+              <h3 className="text-lg font-semibold mb-4">Form Comparison</h3>
+              <div className="h-[250px] sm:h-[400px] overflow-hidden">
+                <div style={isMobile ? { transform: 'translateX(-25px)', width: 342, height: 250 } : { width: '100%', height: '100%' }}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <RechartsPieChart>
-                      <Pie
-                        data={filteredRatingDistribution}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {filteredRatingDistribution.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip 
-                        formatter={(value: number) => [`${value} reviews`, 'Count']}
+                    <RechartsBarChart data={formComparisonData} barCategoryGap={24}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" vertical={false} />
+                      <XAxis 
+                        dataKey="name" 
+                        tick={renderCustomAxisTick}
+                        axisLine={false} 
+                        tickLine={false}
+                        angle={-45}
+                        textAnchor="end"
+                        height={60}
+                      />
+                      <YAxis 
+                        tick={{ fontSize: 12, fill: '#6B7280' }} 
+                        axisLine={false} 
+                        tickLine={false} 
+                      />
+                      <Tooltip
                         contentStyle={{ 
                           borderRadius: 8, 
                           background: '#fff', 
                           boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
                           border: 'none'
                         }}
+                        labelStyle={{ color: '#6B7280', fontWeight: 500 }}
+                        itemStyle={{ color: '#374151' }}
                       />
-                    </RechartsPieChart>
+                      <Bar 
+                        dataKey="positive" 
+                        name="Positive Reviews" 
+                        fill={MINIMAL_COLORS.positive} 
+                        radius={[8, 8, 0, 0]} 
+                        stackId="a" 
+                        isAnimationActive 
+                      />
+                      <Bar 
+                        dataKey="neutral" 
+                        name="Neutral Reviews" 
+                        fill={MINIMAL_COLORS.neutral} 
+                        radius={[8, 8, 0, 0]} 
+                        stackId="a" 
+                        isAnimationActive 
+                      />
+                      <Bar 
+                        dataKey="negative" 
+                        name="Negative Reviews" 
+                        fill={MINIMAL_COLORS.negative} 
+                        radius={[8, 8, 0, 0]} 
+                        stackId="a" 
+                        isAnimationActive 
+                      />
+                    </RechartsBarChart>
                   </ResponsiveContainer>
-                ) : (
-                  <div className="flex items-center justify-center h-full text-muted-foreground">
-                    No rating data available
-                  </div>
-                )}
+                </div>
               </div>
             </Card>
           </div>
 
-          <Card className="bg-gradient-to-br from-white to-gray-50 border-none shadow-sm p-6">
-            <h3 className="text-lg font-semibold mb-4">Form Comparison</h3>
-            <div className="h-[400px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <RechartsBarChart data={formComparisonData} barCategoryGap={24}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" vertical={false} />
-                  <XAxis 
-                    dataKey="name" 
-                    tick={{ fontSize: 12, fill: '#6B7280' }} 
-                    axisLine={false} 
-                    tickLine={false} 
-                  />
-                  <YAxis 
-                    tick={{ fontSize: 12, fill: '#6B7280' }} 
-                    axisLine={false} 
-                    tickLine={false} 
-                  />
-                  <Tooltip
-                    contentStyle={{ 
-                      borderRadius: 8, 
-                      background: '#fff', 
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                      border: 'none'
-                    }}
-                    labelStyle={{ color: '#6B7280', fontWeight: 500 }}
-                    itemStyle={{ color: '#374151' }}
-                  />
-                  <Bar 
-                    dataKey="positive" 
-                    name="Positive Reviews" 
-                    fill={MINIMAL_COLORS.positive} 
-                    radius={[8, 8, 0, 0]} 
-                    stackId="a" 
-                    isAnimationActive 
-                  />
-                  <Bar 
-                    dataKey="neutral" 
-                    name="Neutral Reviews" 
-                    fill={MINIMAL_COLORS.neutral} 
-                    radius={[8, 8, 0, 0]} 
-                    stackId="a" 
-                    isAnimationActive 
-                  />
-                  <Bar 
-                    dataKey="negative" 
-                    name="Negative Reviews" 
-                    fill={MINIMAL_COLORS.negative} 
-                    radius={[8, 8, 0, 0]} 
-                    stackId="a" 
-                    isAnimationActive 
-                  />
-                </RechartsBarChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-
-          <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
-            <Card className="bg-gradient-to-br from-white to-gray-50 border-none shadow-sm p-6">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+            <Card className="bg-gradient-to-br from-white to-gray-50 border-none shadow-sm p-3 sm:p-4 md:p-6">
               <h3 className="text-lg font-semibold mb-4">Negative Feedback</h3>
-              <div className="space-y-4 h-80 overflow-y-auto pr-2">
+              <div className="space-y-4 h-[300px] overflow-y-auto pr-2">
                 {selectedNegative && selectedNegative.length > 0 ? (
                   selectedNegative.map((feedback: any, index: number) => (
                     <div key={index} className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
@@ -717,9 +750,9 @@ export default function AnalyticsPage() {
               </div>
             </Card>
 
-            <Card className="bg-gradient-to-br from-white to-gray-50 border-none shadow-sm p-6">
+            <Card className="bg-gradient-to-br from-white to-gray-50 border-none shadow-sm p-3 sm:p-4 md:p-6">
               <h3 className="text-lg font-semibold mb-4">Most Selected Feedback Categories</h3>
-              <div className="space-y-4 h-80 overflow-y-auto pr-2">
+              <div className="space-y-4 h-[300px] overflow-y-auto pr-2">
                 {selectedFeedbackOptions.length > 0 ? (
                   selectedFeedbackOptions.map((category: any, index: number, arr: any[]) => {
                     const allCounts = arr.map((c: any) => c.count)
@@ -743,42 +776,44 @@ export default function AnalyticsPage() {
                       </div>
                     )
                   })
-                ) : selectedFormId ? (
-                  <div className="text-muted-foreground">No feedback categories available</div>
                 ) : (
-                  <div className="text-muted-foreground">No feedback categories available</div>
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    No feedback categories available
+                  </div>
                 )}
               </div>
             </Card>
           </div>
 
-          <Card className="bg-gradient-to-br from-white to-gray-50 border-none shadow-sm p-6">
-            <h3 className="text-lg font-semibold mb-4">Form Performance</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-2 text-muted-foreground font-medium">Form Name</th>
-                    <th className="text-left py-2 text-muted-foreground font-medium">Total Reviews</th>
-                    <th className="text-left py-2 text-muted-foreground font-medium">Average Rating</th>
-                    <th className="text-left py-2 text-muted-foreground font-medium">Positive %</th>
-                    <th className="text-left py-2 text-muted-foreground font-medium">Negative %</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {formAnalytics.map((form) => (
-                    <tr key={form.id} className="border-b hover:bg-gray-50 transition-colors">
-                      <td className="py-2">{form.name}</td>
-                      <td className="py-2">{form.totalReviews}</td>
-                      <td className="py-2">{form.averageRating}</td>
-                      <td className="py-2 text-green-600">{form.positivePercentage}%</td>
-                      <td className="py-2 text-red-600">{form.negativePercentage}%</td>
+          <div className="overflow-x-auto">
+            <Card className="bg-gradient-to-br from-white to-gray-50 border-none shadow-sm p-3 sm:p-4 md:p-6 min-w-[340px]">
+              <h3 className="text-lg font-semibold mb-4">Form Performance</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-2 text-muted-foreground font-medium">Form Name</th>
+                      <th className="text-left py-2 text-muted-foreground font-medium">Total Reviews</th>
+                      <th className="text-left py-2 text-muted-foreground font-medium">Average Rating</th>
+                      <th className="text-left py-2 text-muted-foreground font-medium">Positive %</th>
+                      <th className="text-left py-2 text-muted-foreground font-medium">Negative %</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
+                  </thead>
+                  <tbody>
+                    {formAnalytics.map((form) => (
+                      <tr key={form.id} className="border-b hover:bg-gray-50 transition-colors">
+                        <td className="py-2">{form.name}</td>
+                        <td className="py-2">{form.totalReviews}</td>
+                        <td className="py-2">{form.averageRating}</td>
+                        <td className="py-2 text-green-600">{form.positivePercentage}%</td>
+                        <td className="py-2 text-red-600">{form.negativePercentage}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </div>
         </>
       )}
     </div>

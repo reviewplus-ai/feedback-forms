@@ -169,8 +169,8 @@ export default function Home() {
                 </h2>
                 <p className="mx-auto max-w-2xl text-xl text-gray-600">
                   Choose the plan that's right for your business. All plans include a 14-day free trial.
-                </p>
-              </div>
+                  </p>
+                </div>
               <div className="grid gap-6 sm:gap-8 md:grid-cols-3">
                 {[
                   {
@@ -244,7 +244,7 @@ export default function Home() {
                           )}
                         </div>
                         <p className="mt-2 text-gray-600">{plan.description}</p>
-                      </div>
+                  </div>
                       <ul className="space-y-3 flex-1">
                         {plan.features.map((feature, featureIndex) => (
                           <li key={featureIndex} className="flex items-center">
@@ -264,7 +264,7 @@ export default function Home() {
                           {plan.buttonText}
                         </Button>
                       </Link>
-                    </div>
+                </div>
                   </div>
                 ))}
               </div>
@@ -326,8 +326,8 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
+                </div>
+                </div>
         </section>
 
         {/* CTA Section */}

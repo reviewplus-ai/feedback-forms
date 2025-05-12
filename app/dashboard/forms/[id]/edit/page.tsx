@@ -188,21 +188,21 @@ export default function EditFormPage({ params }: PageProps) {
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Edit Feedback Form</h1>
-          <p className="text-muted-foreground mt-1">Update your form settings and preferences</p>
-        </div>
-        <Button variant="outline" className="gap-2" asChild>
+    <div className="container mx-auto py-4 sm:py-6 md:py-8">
+      <div className="mb-4">
+        <Button variant="outline" className="gap-2 text-sm py-1 px-3" asChild>
           <Link href={`/dashboard/forms/${resolvedParams.id}`}>
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-3 w-3" />
             Back to Form
           </Link>
         </Button>
       </div>
+      <div className="mb-4 sm:mb-6 md:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold">Edit Feedback Form</h1>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base">Update your form settings and preferences</p>
+      </div>
 
-      <div className="bg-gradient-to-br from-white to-gray-50 border-none rounded-lg p-6 shadow-sm">
+      <div className="bg-gradient-to-br from-white to-gray-50 border-none rounded-lg p-4 sm:p-6 shadow-sm">
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Basic Information */}
           <div>
@@ -210,7 +210,7 @@ export default function EditFormPage({ params }: PageProps) {
               <Building2 className="h-5 w-5 text-muted-foreground" />
               <h2 className="text-xl font-semibold">Basic Information</h2>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-4 grid-cols-1 sm:grid-cols-2">
               <div>
                 <Label htmlFor="companyName" className="text-muted-foreground">Company Name</Label>
                 <Input

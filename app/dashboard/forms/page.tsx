@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
-import { PlusCircle, Star, Link as LinkIcon, CheckCircle, MessageSquare, Calendar, BarChart3, ThumbsUp, ThumbsDown } from 'lucide-react'
+import { PlusCircle, Star, Link as LinkIcon, Copy, CheckCircle, MessageSquare, Calendar, BarChart3, ThumbsUp, ThumbsDown } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 
 interface Form {
@@ -100,13 +100,13 @@ export default function FormsPage() {
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="max-w-full px-2 sm:px-4 md:px-8 py-6 mx-auto">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Your Feedback Forms</h1>
-          <p className="text-muted-foreground mt-1">Manage and track your customer feedback forms</p>
+          <h1 className="text-2xl sm:text-3xl font-bold">Your Feedback Forms</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">Manage and track your customer feedback forms</p>
         </div>
-        <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800" asChild>
+        <Button className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800" asChild>
           <Link href="/dashboard/forms/new">
             <PlusCircle className="mr-2 h-4 w-4" />
             Create New Form
@@ -126,7 +126,7 @@ export default function FormsPage() {
           </Button>
         </div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 items-stretch">
           {forms.map((form) => {
             const totalReviews = form.reviews?.length || 0
             const averageRating = form.reviews?.length 
@@ -138,28 +138,31 @@ export default function FormsPage() {
               : 'No reviews yet'
 
             return (
-              <div key={form.id} className="bg-gradient-to-br from-white to-gray-50 border-none rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h2 className="text-xl font-semibold mb-1">{form.name}</h2>
-                    <p className="text-muted-foreground">{form.company_name}</p>
+              <div key={form.id} className="bg-gradient-to-br from-white to-gray-50 border-none rounded-lg p-4 sm:p-6 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col h-full justify-between">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-3">
+                  <div className="min-w-0">
+                    <h2 className="text-lg sm:text-xl font-semibold mb-1 truncate" title={form.name}>{form.name}</h2>
+                    <p className="text-muted-foreground text-xs sm:text-sm truncate" title={form.company_name}>{form.company_name}</p>
                   </div>
-                  <div className="flex items-center space-x-1">
+                  <div className="flex items-center space-x-1 mt-2 sm:mt-0">
                     <div className="h-8 w-8 rounded-full bg-yellow-100 flex items-center justify-center">
                       <Star className="h-4 w-4 text-yellow-600" />
                     </div>
-                    <span className="font-medium text-lg">{averageRating}</span>
+                    <span className="font-medium text-base sm:text-lg">{averageRating}</span>
                   </div>
                 </div>
 
-                <div className="space-y-3 text-sm mb-4">
-                  <div className="flex items-center text-gray-600">
+                <div className="space-y-2 text-xs sm:text-sm mb-3">
+                  <div className="flex items-center text-gray-600 min-w-0">
                     <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center mr-2">
                       <LinkIcon className="h-3 w-3 text-blue-600" />
                     </div>
-                    <a href={`${process.env.NEXT_PUBLIC_SITE_URL}/review/${form.slug}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate">
-                      {process.env.NEXT_PUBLIC_SITE_URL}/review/{form.slug}
-                    </a>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <a href={`${process.env.NEXT_PUBLIC_SITE_URL}/review/${form.slug}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate" style={{ maxWidth: '120px', display: 'inline-block', verticalAlign: 'bottom' }} title={`${process.env.NEXT_PUBLIC_SITE_URL}/review/${form.slug}`}>{form.slug}</a>
+                      <Button type="button" size="icon" variant="ghost" className="p-0.5" onClick={() => {navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_SITE_URL}/review/${form.slug}`); toast.success('Link copied!')}} title="Copy link">
+                        <Copy className="h-3 w-3 text-blue-300 hover:text-blue-500" />
+                      </Button>
+                    </div>
                   </div>
                   <div className="flex items-center text-gray-600">
                     <div className="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center mr-2">
@@ -175,13 +178,10 @@ export default function FormsPage() {
                   </div>
                 </div>
 
-                <div className="border-t pt-4">
-                  <div className="flex gap-2">
-                    <Button variant="outline" className="flex-1 hover:bg-gray-50" asChild>
+                <div className="border-t pt-3 mt-auto">
+                  <div className="flex flex-col w-full">
+                    <Button variant="outline" className="w-full hover:bg-gray-50 text-xs sm:text-sm py-2" asChild>
                       <Link href={`/dashboard/forms/${form.id}`}>View Details</Link>
-                    </Button>
-                    <Button variant="outline" className="flex-1 hover:bg-gray-50" asChild>
-                      <Link href={`/dashboard/forms/${form.id}/edit`}>Edit</Link>
                     </Button>
                   </div>
                 </div>

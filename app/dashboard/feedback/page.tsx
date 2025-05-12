@@ -53,8 +53,8 @@ export default function FeedbackPage() {
 
       const response = await fetch(`/api/reviews?${params}`)
       if (!response.ok) throw new Error('Failed to fetch reviews')
-      
-      const data = await response.json()
+        
+        const data = await response.json()
       setReviews(data.reviews)
       setTotalItems(data.total)
       setTotalPages(data.totalPages)
@@ -62,10 +62,10 @@ export default function FeedbackPage() {
     } catch (error) {
       console.error('Error fetching reviews:', error)
       setError('Failed to load reviews')
-    } finally {
-      setLoading(false)
+      } finally {
+        setLoading(false)
+      }
     }
-  }
 
   useEffect(() => {
     fetchReviews()
@@ -121,43 +121,43 @@ export default function FeedbackPage() {
       const data = await response.json()
       const reviewsToExport = data.reviews
 
-      const headers = [
-        "Date",
-        "Form",
-        "Rating",
-        "Comment",
-        "Categories",
-        "Contact Name",
-        "Contact Email",
-        "Contact Phone",
-        "Contact Status"
-      ]
-      
+    const headers = [
+      "Date",
+      "Form",
+      "Rating",
+      "Comment",
+      "Categories",
+      "Contact Name",
+      "Contact Email",
+      "Contact Phone",
+      "Contact Status"
+    ]
+    
       const csvData = reviewsToExport.map((review: Review) => [
         format(new Date(review.created_at), 'yyyy-MM-dd HH:mm:ss'),
         review.form?.name || 'Unknown Form',
-        review.rating,
-        review.comment || "",
-        review.feedback_categories?.join(", ") || "",
-        review.contact_name || "",
-        review.contact_email || "",
-        review.contact_phone || "",
-        review.contact_status || ""
-      ])
+      review.rating,
+      review.comment || "",
+      review.feedback_categories?.join(", ") || "",
+      review.contact_name || "",
+      review.contact_email || "",
+      review.contact_phone || "",
+      review.contact_status || ""
+    ])
 
-      const csvContent = [
-        headers.join(","),
+    const csvContent = [
+      headers.join(","),
         ...csvData.map((row: (string | number)[]) => row.map((cell: string | number) => `"${cell}"`).join(","))
-      ].join("\n")
+    ].join("\n")
 
-      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
-      const link = document.createElement("a")
-      const url = URL.createObjectURL(blob)
-      link.setAttribute("href", url)
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+    const link = document.createElement("a")
+    const url = URL.createObjectURL(blob)
+    link.setAttribute("href", url)
       link.setAttribute("download", `reviews-${format(new Date(), 'yyyy-MM-dd')}${exportAll ? '-all' : '-page-' + currentPage}.csv`)
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
     } catch (error) {
       console.error('Error exporting reviews:', error)
       setError('Failed to export reviews')
@@ -196,9 +196,9 @@ export default function FeedbackPage() {
           <Popover>
             <PopoverTrigger asChild>
               <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 w-full sm:w-auto">
-                <Download className="mr-2 h-4 w-4" />
-                Export CSV
-              </Button>
+            <Download className="mr-2 h-4 w-4" />
+            Export CSV
+          </Button>
             </PopoverTrigger>
             <PopoverContent className="w-48">
               <div className="space-y-2">
@@ -356,79 +356,79 @@ export default function FeedbackPage() {
               ))}
             </div>
           ) : (
-            <div className="space-y-4">
+          <div className="space-y-4">
               {reviews.map((review) => (
                 <div key={review.id} className="bg-white rounded-lg p-4 sm:p-6 space-y-4 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <div className="flex">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`w-4 h-4 ${
-                                i < review.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
-                              }`}
-                            />
-                          ))}
-                        </div>
+                <div className="flex justify-between items-start">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-4 h-4 ${
+                              i < review.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
+                            }`}
+                          />
+                        ))}
+                      </div>
                         <span className="text-sm text-muted-foreground">
                           {format(new Date(review.created_at), 'MMM d, yyyy h:mm a')}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
                         <p className="text-sm font-medium">{review.form?.name || 'Unknown Form'}</p>
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          review.is_positive 
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {review.is_positive ? 'Positive' : 'Negative'}
-                        </span>
-                      </div>
-                      {review.comment && (
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        review.is_positive 
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {review.is_positive ? 'Positive' : 'Negative'}
+                      </span>
+                    </div>
+                    {review.comment && (
                         <p className="text-sm text-muted-foreground">{review.comment}</p>
-                      )}
-                    </div>
+                    )}
                   </div>
-                  {review.feedback_categories && review.feedback_categories.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {review.feedback_categories.map((category, index) => (
-                        <span
-                          key={index}
-                          className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs"
-                        >
-                          {category}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  {(review.contact_name || review.contact_email || review.contact_phone) && (
-                    <div className="border-t pt-4">
-                      <div className="flex items-center justify-between mb-3">
+                </div>
+                {review.feedback_categories && review.feedback_categories.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {review.feedback_categories.map((category, index) => (
+                      <span
+                        key={index}
+                        className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs"
+                      >
+                        {category}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {(review.contact_name || review.contact_email || review.contact_phone) && (
+                  <div className="border-t pt-4">
+                    <div className="flex items-center justify-between mb-3">
                         <h4 className="text-sm font-medium text-muted-foreground">Contact Information</h4>
                         <ReviewStatusSelect
                           reviewId={review.id}
                           currentStatus={review.contact_status}
                           onStatusChange={(newStatus) => handleStatusChange(review.id, newStatus)}
                         />
-                      </div>
-                      <div className="space-y-2">
-                        {review.contact_name && (
-                          <p className="text-sm text-muted-foreground">Name: {review.contact_name}</p>
-                        )}
-                        {review.contact_email && (
-                          <p className="text-sm text-muted-foreground">Email: {review.contact_email}</p>
-                        )}
-                        {review.contact_phone && (
-                          <p className="text-sm text-muted-foreground">Phone: {review.contact_phone}</p>
-                        )}
-                      </div>
                     </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                    <div className="space-y-2">
+                      {review.contact_name && (
+                          <p className="text-sm text-muted-foreground">Name: {review.contact_name}</p>
+                      )}
+                      {review.contact_email && (
+                          <p className="text-sm text-muted-foreground">Email: {review.contact_email}</p>
+                      )}
+                      {review.contact_phone && (
+                          <p className="text-sm text-muted-foreground">Phone: {review.contact_phone}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
           )}
 
           {/* Pagination */}
