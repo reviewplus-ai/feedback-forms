@@ -7,10 +7,34 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 export default function LoginPage() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const supabase = createClientComponentClient()
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) {
+        throw error
+      }
+
+      router.push('/dashboard')
+    } catch (error: any) {
+      setError(error.message)
+      setLoading(false)
+    }
+  }
 
   const handleGoogleLogin = async () => {
     setError(null)
@@ -59,6 +83,53 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-4">
+            <form onSubmit={handleEmailLogin} className="space-y-4">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-card-foreground mb-1">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 border border-input rounded-lg bg-background text-card-foreground"
+                  placeholder="Enter your email"
+                />
+              </div>
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-card-foreground mb-1">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 border border-input rounded-lg bg-background text-card-foreground"
+                  placeholder="Enter your password"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 px-4 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
+              >
+                {loading ? 'Signing in...' : 'Sign in'}
+              </button>
+            </form>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-input"></div>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+              </div>
+            </div>
+
             <button
               onClick={handleGoogleLogin}
               disabled={loading}
