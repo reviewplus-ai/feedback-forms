@@ -105,6 +105,97 @@ export async function handleTelegramWebhook(update: Update.MessageUpdate) {
       
       switch (command) {
         case '/start':
+          // Check for deep link parameter (e.g., /start subscribe_12345)
+          if (args.length > 0 && args[0].startsWith('subscribe_')) {
+            const formId = args[0].replace('subscribe_', '');
+
+            // Get form details with explicit field selection
+            const { data: form, error: formError } = await supabase
+              .from('review_forms')
+              .select('id, name, company_name, slug, rating_threshold, welcome_message, positive_redirect_url, negative_redirect_url, negative_redirect_type, negative_feedback_questions')
+              .eq('id', formId)
+              .single();
+
+            if (formError) {
+              console.error('Error fetching form:', formError);
+              await sendTelegramMessage(chatId, '❌ Error accessing form. Please check the form ID and try again.');
+              return;
+            }
+
+            if (!form) {
+              await sendTelegramMessage(chatId, '❌ Form not found. Please check the form ID and try again.');
+              return;
+            }
+
+            // Check if already subscribed
+            const { data: existingSubscription, error: checkError } = await supabase
+              .from('telegram_form_subscriptions')
+              .select('is_subscribed')
+              .eq('telegram_user_id', user.id)
+              .eq('form_id', form.id)
+              .single();
+
+            if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "not found" error
+              console.error('Error checking subscription:', checkError);
+              await sendTelegramMessage(chatId, '❌ Error checking subscription status. Please try again later.');
+              return;
+            }
+
+            if (existingSubscription?.is_subscribed) {
+              await sendTelegramMessage(chatId, 'ℹ️ You are already subscribed to this form.');
+              return;
+            }
+
+            // If subscription exists but is unsubscribed, update it
+            if (existingSubscription) {
+              const { error: updateError } = await supabase
+                .from('telegram_form_subscriptions')
+                .update({ is_subscribed: true })
+                .eq('telegram_user_id', user.id)
+                .eq('form_id', form.id);
+
+              if (updateError) {
+                console.error('Error updating subscription:', updateError);
+                await sendTelegramMessage(chatId, '❌ Error subscribing to form. Please try again later.');
+                return;
+              }
+            } else {
+              // Create new subscription if it doesn't exist
+              const { error: insertError } = await supabase
+                .from('telegram_form_subscriptions')
+                .insert({
+                  telegram_user_id: user.id,
+                  form_id: form.id,
+                  is_subscribed: true
+                });
+
+              if (insertError) {
+                console.error('Error creating subscription:', insertError);
+                await sendTelegramMessage(chatId, '❌ Error subscribing to form. Please try again later.');
+                return;
+              }
+            }
+
+            // Send success message with form details
+            const formDetails = `✅ Successfully subscribed to form!\n\n` +
+              `📝 Form Details:\n` +
+              `• Name: ${form.name}\n` +
+              `• Company: ${form.company_name}\n` +
+              `• URL: ${process.env.NEXT_PUBLIC_SITE_URL}/review/${form.slug}\n` +
+              `• Rating Threshold: ${form.rating_threshold}+ stars\n` +
+              `• Welcome Message: ${form.welcome_message}\n` +
+              (form.positive_redirect_url ? `• Positive Review Redirect: ${form.positive_redirect_url}\n` : '') +
+              (form.negative_redirect_url ? `• Negative Review Redirect: ${form.negative_redirect_url}\n` : '') +
+              (form.negative_redirect_type === 'internal' 
+                ? `• Negative Reviews: Negative Feedback Options:\n${(form.negative_feedback_questions as string[]).map((q: string) => `  - ${q}`).join('\n')}\n` 
+                : '• Negative Reviews: Redirects to external URL\n') +
+              `\nYou'll now receive notifications for new reviews on this form.`;
+
+            await sendTelegramMessage(chatId, formDetails);
+            return;
+          }
+
+          // Default welcome message if no parameter
           await sendTelegramMessage(chatId, 
             'Welcome to ReviewPlus Bot! 🎉\n\n' +
             'Use /subscribe <form_id> to subscribe to a specific form\n' +

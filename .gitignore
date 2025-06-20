@@ -47,3 +47,7 @@ supabase/.temp
 # Temporary files
 *.log
 *.tmp
+
+# tests
+
+app/api/test-telegram

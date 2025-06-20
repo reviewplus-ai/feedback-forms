@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Settings, LogOut, User, LayoutDashboard, MessageSquare, FileText, BarChart2, Menu } from "lucide-react"
+import { Settings, LogOut, User, LayoutDashboard, MessageSquare, FileText, BarChart2, Menu, Send } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -81,6 +81,11 @@ export default function DashboardLayout({
       name: 'Forms',
       href: '/dashboard/forms',
       icon: FileText,
+    },
+    {
+      name: 'Request',
+      href: '/dashboard/feedback-request',
+      icon: Send,
     },
     {
       name: 'Analytics',

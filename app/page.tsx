@@ -49,7 +49,7 @@ export default function Home() {
                 review<Image src="/logo.png" alt="Plus Logo" width={22} height={22} className="inline-block align-middle" priority />
               </span>
             </Link>
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-6 ml-4 md:ml-0">
               <nav className="hidden md:flex items-center gap-4">
                 {[
                   { id: "features", label: "Features" },
@@ -71,7 +71,7 @@ export default function Home() {
                 ))}
               </nav>
             <div className="flex items-center gap-4">
-                <Link href="/quote">
+                <Link href="/quote" className="ml-4">
                   <Button variant="outline" className="font-medium border-blue-200 text-blue-600 hover:bg-blue-50">
                     Get a Quote
                   </Button>
