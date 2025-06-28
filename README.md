@@ -8,6 +8,8 @@ A modern review management system built with Next.js, Supabase, and Telegram int
 - Company and review form management
 - Real-time review collection
 - Telegram bot integration for notifications
+- WhatsApp Business API integration for feedback requests
+- Custom WhatsApp template management
 - Responsive and modern UI
 
 ## Tech Stack
@@ -17,6 +19,7 @@ A modern review management system built with Next.js, Supabase, and Telegram int
 - Tailwind CSS
 - Radix UI
 - Telegram Bot API
+- WhatsApp Business API (Meta Graph API)
 
 ## Getting Started
 
@@ -35,6 +38,7 @@ A modern review management system built with Next.js, Supabase, and Telegram int
    - Supabase project URL and keys
    - Google OAuth credentials
    - Telegram bot token
+   - WhatsApp Business API credentials
    - Webhook URL
 
 5. Run the development server:
@@ -56,6 +60,45 @@ A modern review management system built with Next.js, Supabase, and Telegram int
 - `NEXT_PUBLIC_SITE_URL`: Your site URL
 - `TELEGRAM_BOT_TOKEN`: Your Telegram bot token
 - `WEBHOOK_URL`: Your webhook URL for Telegram bot
+- `WHATSAPP_TOKEN`: Your WhatsApp Business API access token
+- `WHATSAPP_PHONE_NUMBER_ID`: Your WhatsApp phone number ID
+- `WHATSAPP_BUSINESS_ACCOUNT_ID`: Your WhatsApp Business account ID
+
+## WhatsApp Integration
+
+The system includes comprehensive WhatsApp Business API integration for sending feedback requests:
+
+### Template Management
+- Create custom WhatsApp templates with variables
+- Automatic template creation via Meta's Graph API
+- Template status tracking (APPROVED, PENDING, REJECTED)
+- Template synchronization with WhatsApp Business API
+
+### Key Features
+- **Template Sync**: Automatically sync templates from Meta WhatsApp Business API
+- **Variable Support**: Use `{{variable_name}}` syntax in templates
+- **Status Tracking**: Monitor template approval status
+- **Error Handling**: Comprehensive error messages and troubleshooting
+
+### Usage
+1. Go to Dashboard → Feedback Request
+2. Create custom templates with UTILITY category
+3. Use "Sync from Meta" to sync with WhatsApp Business API
+4. Send feedback requests using approved templates
+
+### Testing
+Use the provided test scripts to verify functionality:
+```bash
+# Get auth token for testing
+node scripts/get-auth-token.js
+
+# Test template sync
+export TEST_AUTH_TOKEN="your_token_here"
+node scripts/test-template-sync.js
+
+# Test template validation
+node scripts/test-template-validation.js
+```
 
 ## Project Structure
 
@@ -67,6 +110,7 @@ A modern review management system built with Next.js, Supabase, and Telegram int
 - `types/`: TypeScript type definitions
 - `utils/`: Helper functions
 - `hooks/`: Custom React hooks
+- `scripts/`: Test and utility scripts
 
 ## Contributing
 
