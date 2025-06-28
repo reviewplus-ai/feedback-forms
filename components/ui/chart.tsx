@@ -112,6 +112,7 @@ const ChartTooltipContent = React.forwardRef<
       nameKey?: string
       labelKey?: string
       payload?: any[]
+      label?: string
     }
 >(
   (
