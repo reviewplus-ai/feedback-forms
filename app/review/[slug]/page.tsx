@@ -15,6 +15,10 @@ type Form = {
   negative_redirect_url: string | null
   negative_redirect_type: string | null
   negative_feedback_questions: string[] | null
+  neutral_redirect_type: string | null
+  neutral_redirect_url: string | null
+  neutral_feedback_questions: string[] | null
+  social_review_links: string[] | null
   enable_comments: boolean
   rating_threshold: number
   company_name: string
@@ -41,6 +45,10 @@ export default async function ReviewPage({ params }: PageProps) {
         negative_redirect_url,
         negative_redirect_type,
         negative_feedback_questions,
+        neutral_redirect_type,
+        neutral_redirect_url,
+        neutral_feedback_questions,
+        social_review_links,
         enable_comments,
         rating_threshold,
         company_name
@@ -71,6 +79,17 @@ export default async function ReviewPage({ params }: PageProps) {
                   "What was the main reason for your negative experience?",
                   "Would you like us to contact you to discuss this further?"
                 ]}
+            neutralRedirectType={(form.neutral_redirect_type as "internal" | "external") || "internal"}
+            neutralRedirectUrl={form.neutral_redirect_url || ""}
+            neutralFeedbackQuestions={Array.isArray(form.neutral_feedback_questions)
+              ? form.neutral_feedback_questions
+              : [
+                  "What could we improve?",
+                  "What would make your experience better?",
+                  "Would you like us to contact you to discuss this further?",
+                  "Other" // for neutral reviews
+                ]}
+            socialReviewLinks={form.social_review_links || []}
             enableComments={form.enable_comments}
             primaryColor="#4f46e5"
             companyName={form.company_name}

@@ -17,7 +17,7 @@ import ReviewStatusSelect from "@/components/ReviewStatusSelect"
 import { Review } from "@/types/review"
 
 type SortOption = "newest" | "oldest" | "highest" | "lowest"
-type FilterOption = "all" | "positive" | "negative"
+type FilterOption = "all" | "positive" | "neutral" | "negative"
 
 export default function FeedbackPage() {
   const [reviews, setReviews] = useState<Review[]>([])
@@ -127,6 +127,8 @@ export default function FeedbackPage() {
       "Rating",
       "Comment",
       "Categories",
+      "Neutral Categories",
+      "Neutral Other Feedback",
       "Contact Name",
       "Contact Email",
       "Contact Phone",
@@ -139,6 +141,8 @@ export default function FeedbackPage() {
       review.rating,
       review.comment || "",
       review.feedback_categories?.join(", ") || "",
+      review.neutral_feedback_categories?.join(", ") || "",
+      review.neutral_other_feedback || "",
       review.contact_name || "",
       review.contact_email || "",
       review.contact_phone || "",
@@ -248,6 +252,7 @@ export default function FeedbackPage() {
             <SelectContent>
               <SelectItem value="all">All Feedback</SelectItem>
               <SelectItem value="positive">Positive Feedback</SelectItem>
+              <SelectItem value="neutral">Neutral Feedback</SelectItem>
               <SelectItem value="negative">Negative Feedback</SelectItem>
             </SelectContent>
           </Select>
@@ -304,7 +309,11 @@ export default function FeedbackPage() {
             Showing {reviews.length} of {totalItems} feedbacks
             {filterBy !== "all" && (
               <Badge variant="secondary" className="ml-2">
-                {filterBy === "positive" ? "Positive" : "Negative"} Feedbacks
+                {filterBy === "positive"
+                  ? "Positive"
+                  : filterBy === "neutral"
+                  ? "Neutral"
+                  : "Negative"} Feedbacks
               </Badge>
             )}
             {selectedForm !== "all" && (
@@ -379,13 +388,22 @@ export default function FeedbackPage() {
                     <div className="flex items-center gap-2">
                         <p className="text-sm font-medium">{review.form?.name || 'Unknown Form'}</p>
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        review.is_positive 
+                        review.is_positive === true
                           ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
+                          : review.is_positive === false
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-blue-100 text-blue-800' // Use blue for neutral
                       }`}>
-                        {review.is_positive ? 'Positive' : 'Negative'}
+                        {review.is_positive === true
+                          ? 'Positive'
+                          : review.is_positive === false
+                          ? 'Negative'
+                          : 'Neutral'}
                       </span>
                     </div>
+                    {review.is_positive === null && review.neutral_other_feedback && (
+                        <p className="text-sm text-muted-foreground">{review.neutral_other_feedback}</p>
+                    )}
                     {review.comment && (
                         <p className="text-sm text-muted-foreground">{review.comment}</p>
                     )}
@@ -394,6 +412,18 @@ export default function FeedbackPage() {
                 {review.feedback_categories && review.feedback_categories.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {review.feedback_categories.map((category, index) => (
+                      <span
+                        key={index}
+                        className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs"
+                      >
+                        {category}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {review.neutral_feedback_categories && review.neutral_feedback_categories.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {review.neutral_feedback_categories.map((category, index) => (
                       <span
                         key={index}
                         className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs"

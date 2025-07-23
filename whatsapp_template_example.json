@@ -1,0 +1,30 @@
+{
+  "name": "customer_feedback_request",
+  "description": "Template for requesting customer feedback after a service or purchase",
+  "category": "UTILITY",
+  "survey_type": "CUSTOM",
+  "language": "en",
+  "header": "Thank you for choosing {{company_name}}!",
+  "body": "Hi {{customer_name}},\n\nWe hope you enjoyed your recent {{service_type}} experience with us. Your feedback is incredibly valuable and helps us improve our services.\n\nCould you please take a moment to share your thoughts? Your review will help other customers make informed decisions.\n\nService Details:\n• Date: {{service_date}}\n• Order/Booking: {{order_id}}\n• Service: {{service_type}}\n\nClick the link below to leave your review:\n{{review_link}}\n\nThank you for your time!",
+  "footer": "{{company_name}} - Delivering excellence since {{year}}",
+  "buttons": [
+    {
+      "text": "Leave Review",
+      "url": "{{review_link}}"
+    },
+    {
+      "text": "Contact Support",
+      "url": "{{support_link}}"
+    }
+  ],
+  "variables": [
+    "customer_name",
+    "company_name", 
+    "service_type",
+    "service_date",
+    "order_id",
+    "review_link",
+    "support_link",
+    "year"
+  ]
+} 

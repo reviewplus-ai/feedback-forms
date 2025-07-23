@@ -1,0 +1,186 @@
+{
+  "templates": [
+    {
+      "name": "customer_feedback_request",
+      "description": "Template for requesting customer feedback after a service or purchase",
+      "category": "UTILITY",
+      "survey_type": "CUSTOM",
+      "language": "en",
+      "header": "Thank you for choosing {{company_name}}!",
+      "body": "Hi {{customer_name}},\n\nWe hope you enjoyed your recent {{service_type}} experience with us. Your feedback is incredibly valuable and helps us improve our services.\n\nCould you please take a moment to share your thoughts? Your review will help other customers make informed decisions.\n\nService Details:\n• Date: {{service_date}}\n• Order/Booking: {{order_id}}\n• Service: {{service_type}}\n\nClick the link below to leave your review:\n{{review_link}}\n\nThank you for your time!",
+      "footer": "{{company_name}} - Delivering excellence since {{year}}",
+      "buttons": [
+        {
+          "text": "Leave Review",
+          "url": "{{review_link}}"
+        },
+        {
+          "text": "Contact Support",
+          "url": "{{support_link}}"
+        }
+      ],
+      "variables": [
+        "customer_name",
+        "company_name", 
+        "service_type",
+        "service_date",
+        "order_id",
+        "review_link",
+        "support_link",
+        "year"
+      ]
+    },
+    {
+      "name": "order_confirmation",
+      "description": "Template for confirming customer orders",
+      "category": "UTILITY",
+      "survey_type": "CUSTOM",
+      "language": "en",
+      "header": "Order Confirmed - {{company_name}}",
+      "body": "Hi {{customer_name}},\n\nYour order has been confirmed and is being processed!\n\nOrder Details:\n• Order #: {{order_number}}\n• Items: {{item_count}} items\n• Total: {{total_amount}}\n• Estimated Delivery: {{delivery_date}}\n\nTrack your order: {{tracking_link}}\n\nThank you for your purchase!",
+      "footer": "Questions? Contact us at {{support_phone}}",
+      "buttons": [
+        {
+          "text": "Track Order",
+          "url": "{{tracking_link}}"
+        },
+        {
+          "text": "View Order",
+          "url": "{{order_link}}"
+        }
+      ],
+      "variables": [
+        "customer_name",
+        "company_name",
+        "order_number",
+        "item_count",
+        "total_amount",
+        "delivery_date",
+        "tracking_link",
+        "order_link",
+        "support_phone"
+      ]
+    },
+    {
+      "name": "appointment_reminder",
+      "description": "Template for appointment reminders",
+      "category": "UTILITY",
+      "survey_type": "CUSTOM",
+      "language": "en",
+      "header": "Appointment Reminder",
+      "body": "Hi {{customer_name}},\n\nThis is a friendly reminder about your upcoming appointment:\n\n📅 Date: {{appointment_date}}\n⏰ Time: {{appointment_time}}\n📍 Location: {{location}}\n👨‍⚕️ Provider: {{provider_name}}\n\nPlease arrive 10 minutes early. If you need to reschedule, please call us at {{phone_number}}.\n\nWe look forward to seeing you!",
+      "footer": "{{company_name}} - {{phone_number}}",
+      "buttons": [
+        {
+          "text": "Reschedule",
+          "url": "{{reschedule_link}}"
+        },
+        {
+          "text": "Directions",
+          "url": "{{directions_link}}"
+        }
+      ],
+      "variables": [
+        "customer_name",
+        "appointment_date",
+        "appointment_time",
+        "location",
+        "provider_name",
+        "phone_number",
+        "company_name",
+        "reschedule_link",
+        "directions_link"
+      ]
+    },
+    {
+      "name": "delivery_notification",
+      "description": "Template for delivery notifications",
+      "category": "UTILITY",
+      "survey_type": "CUSTOM",
+      "language": "en",
+      "header": "Your package is on the way!",
+      "body": "Hi {{customer_name}},\n\nGreat news! Your package is out for delivery today.\n\n📦 Package Details:\n• Order #: {{order_number}}\n• Carrier: {{carrier_name}}\n• Tracking #: {{tracking_number}}\n• Estimated Delivery: {{delivery_time}}\n\nPlease ensure someone is available to receive the package. If you're not home, we'll leave it in a safe location.\n\nTrack your delivery: {{tracking_link}}",
+      "footer": "{{company_name}} - Thank you for your order!",
+      "buttons": [
+        {
+          "text": "Track Delivery",
+          "url": "{{tracking_link}}"
+        },
+        {
+          "text": "Delivery Instructions",
+          "url": "{{instructions_link}}"
+        }
+      ],
+      "variables": [
+        "customer_name",
+        "order_number",
+        "carrier_name",
+        "tracking_number",
+        "delivery_time",
+        "tracking_link",
+        "company_name",
+        "instructions_link"
+      ]
+    },
+    {
+      "name": "welcome_message",
+      "description": "Template for welcoming new customers",
+      "category": "UTILITY",
+      "survey_type": "CUSTOM",
+      "language": "en",
+      "header": "Welcome to {{company_name}}!",
+      "body": "Hi {{customer_name}},\n\nWelcome to the {{company_name}} family! 🎉\n\nWe're excited to have you on board and can't wait to provide you with exceptional service.\n\nHere's what you can expect:\n• {{benefit_1}}\n• {{benefit_2}}\n• {{benefit_3}}\n\nGet started by exploring our services: {{services_link}}\n\nIf you have any questions, our team is here to help!",
+      "footer": "{{company_name}} - {{support_email}}",
+      "buttons": [
+        {
+          "text": "Explore Services",
+          "url": "{{services_link}}"
+        },
+        {
+          "text": "Contact Us",
+          "url": "{{contact_link}}"
+        }
+      ],
+      "variables": [
+        "customer_name",
+        "company_name",
+        "benefit_1",
+        "benefit_2",
+        "benefit_3",
+        "services_link",
+        "support_email",
+        "contact_link"
+      ]
+    },
+    {
+      "name": "promotional_offer",
+      "description": "Template for promotional offers and discounts",
+      "category": "MARKETING",
+      "survey_type": "CUSTOM",
+      "language": "en",
+      "header": "Special Offer Just for You! 🎉",
+      "body": "Hi {{customer_name}},\n\nWe have an exclusive offer that we think you'll love!\n\n🔥 {{offer_description}}\n\n💰 Discount: {{discount_amount}}\n⏰ Valid until: {{expiry_date}}\n🎯 Use code: {{promo_code}}\n\nThis offer is only available for a limited time, so don't miss out!\n\nShop now: {{shop_link}}",
+      "footer": "{{company_name}} - Terms and conditions apply",
+      "buttons": [
+        {
+          "text": "Shop Now",
+          "url": "{{shop_link}}"
+        },
+        {
+          "text": "View Terms",
+          "url": "{{terms_link}}"
+        }
+      ],
+      "variables": [
+        "customer_name",
+        "offer_description",
+        "discount_amount",
+        "expiry_date",
+        "promo_code",
+        "shop_link",
+        "company_name",
+        "terms_link"
+      ]
+    }
+  ]
+} 

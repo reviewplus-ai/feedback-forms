@@ -16,6 +16,8 @@ interface Review {
     id: string
     name: string
   }
+  neutral_feedback_categories: string[] | null
+  neutral_other_feedback: string | null
 }
 
 function truncateText(text: string, maxLength: number) {
@@ -28,6 +30,7 @@ export function RecentReviews() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+
 
   useEffect(() => {
     async function fetchRecentReviews() {
@@ -111,6 +114,13 @@ export function RecentReviews() {
                   {truncateText(review.comment, 120)}
                 </p>
               )}
+              {review.neutral_other_feedback !== null && (
+                <p className="text-sm text-gray-700 break-words whitespace-pre-wrap line-clamp-2">
+                  {review.neutral_other_feedback}
+                </p>
+              )}
+
+              {/* negative feedback categories */}
               {review.feedback_categories && review.feedback_categories.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {review.feedback_categories.map((category, index) => (
@@ -121,6 +131,18 @@ export function RecentReviews() {
                       {category}
                     </span>
                   ))}
+                </div>
+              )}
+
+              {/* neutral feedback categories */}
+              {review.neutral_feedback_categories && review.neutral_feedback_categories.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {review.neutral_feedback_categories.map((category, index) => (
+                    <span key={index} className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full text-xs">
+                      {category}
+                    </span>
+                  ))}
+
                 </div>
               )}
             </div>

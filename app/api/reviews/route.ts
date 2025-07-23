@@ -50,6 +50,8 @@ export async function GET(request: Request) {
       query = query.eq('is_positive', true)
     } else if (filterBy === 'negative') {
       query = query.eq('is_positive', false)
+    } else if (filterBy === 'neutral') {
+      query = query.is('is_positive', null)
     }
 
     if (formName !== 'all') {
@@ -127,9 +129,26 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json()
+  // Normalize neutral fields if present
+  let neutral_feedback_categories = body.neutral_feedback_categories
+  if (typeof neutral_feedback_categories === 'string') {
+    try {
+      neutral_feedback_categories = JSON.parse(neutral_feedback_categories)
+    } catch {
+      neutral_feedback_categories = []
+    }
+  }
+  const neutral_other_feedback = body.neutral_other_feedback || null
+
+  const insertData = {
+    ...body,
+    neutral_feedback_categories,
+    neutral_other_feedback
+  }
+
   const { data, error } = await supabase
     .from('reviews')
-    .insert([{ ...body }])  // Removed form_user_id since it's not needed
+    .insert([insertData])
     .select()
 
   if (error) {

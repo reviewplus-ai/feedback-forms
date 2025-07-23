@@ -52,6 +52,10 @@ export default function EditFormPage({ params }: PageProps) {
   const [saving, setSaving] = useState(false)
   const [negativeRedirectType, setNegativeRedirectType] = useState('internal')
   const [negativeFeedbackQuestions, setNegativeFeedbackQuestions] = useState<string[]>([])
+  const [neutralRedirectType, setNeutralRedirectType] = useState('internal')
+  const [neutralRedirectUrl, setNeutralRedirectUrl] = useState('')
+  const [neutralFeedbackQuestions, setNeutralFeedbackQuestions] = useState<string[]>([])
+  const [socialReviewLinks, setSocialReviewLinks] = useState<{ name: string; url: string }[]>([])
   const [formData, setFormData] = useState({
     companyName: '',
     name: '',
@@ -99,6 +103,10 @@ export default function EditFormPage({ params }: PageProps) {
           })
           setNegativeRedirectType(form.negative_redirect_type || 'internal')
           setNegativeFeedbackQuestions(form.negative_feedback_questions || [])
+          setNeutralRedirectType(form.neutral_redirect_type || 'internal')
+          setNeutralRedirectUrl(form.neutral_redirect_url || '')
+          setNeutralFeedbackQuestions(form.neutral_feedback_questions || [])
+          setSocialReviewLinks(form.social_review_links || [])
           setLoading(false)
         }
       } catch (error) {
@@ -124,6 +132,12 @@ export default function EditFormPage({ params }: PageProps) {
       const formData = new FormData(event.currentTarget)
       formData.append('formId', resolvedParams.id)
       formData.append('negativeFeedbackQuestions', JSON.stringify(negativeFeedbackQuestions))
+      formData.append('neutralRedirectType', neutralRedirectType)
+      formData.append('neutralRedirectUrl', neutralRedirectUrl)
+      if (neutralRedirectType === 'internal') {
+        formData.append('neutralFeedbackQuestions', JSON.stringify(neutralFeedbackQuestions))
+      }
+      formData.append('socialReviewLinks', JSON.stringify(socialReviewLinks))
       
       // Ensure we're not changing the slug
       formData.set('slug', form.slug)
@@ -413,6 +427,87 @@ export default function EditFormPage({ params }: PageProps) {
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Neutral Feedback Settings */}
+          <div>
+            <Label className="text-muted-foreground">Neutral Feedback Handling</Label>
+            <div className="space-y-2 mt-1">
+              <select
+                value={neutralRedirectType}
+                onChange={e => setNeutralRedirectType(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              >
+                <option value="internal">Show improvements form</option>
+                <option value="external">Redirect to URL</option>
+              </select>
+              {neutralRedirectType === 'external' && (
+                <Input
+                  type="url"
+                  value={neutralRedirectUrl}
+                  onChange={e => setNeutralRedirectUrl(e.target.value)}
+                  className="w-full mt-1"
+                  placeholder="e.g., https://your-domain.com/neutral-feedback"
+                />
+              )}
+              {neutralRedirectType === 'internal' && (
+                <div className="space-y-2 mt-1">
+                  <Label className="text-xs text-muted-foreground mb-1">Neutral Feedback Questions</Label>
+                  {neutralFeedbackQuestions.map((question, index) => (
+                    <div key={index} className="flex gap-2">
+                      <Input
+                        type="text"
+                        value={question}
+                        onChange={e => setNeutralFeedbackQuestions(qs => qs.map((q, i) => i === index ? e.target.value : q))}
+                        className="flex-1"
+                        placeholder="Enter question"
+                      />
+                      <Button type="button" variant="outline" size="icon" onClick={() => setNeutralFeedbackQuestions(qs => qs.filter((_, i) => i !== index))} className="shrink-0"><Trash2 className="h-4 w-4" /></Button>
+                    </div>
+                  ))}
+                  <Button type="button" variant="outline" onClick={() => setNeutralFeedbackQuestions(qs => [...qs, ''])} className="w-full gap-2"><Plus className="h-4 w-4" />Add Question</Button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Social Review Links Section */}
+          <div className="mt-8">
+            <div className="flex items-center gap-2 mb-2">
+              <h2 className="text-xl font-semibold">Social Review Links</h2>
+              <Button type="button" variant="outline" size="sm" onClick={() => setSocialReviewLinks([...socialReviewLinks, { name: '', url: '' }])}>
+                Add Link
+              </Button>
+            </div>
+            <p className="text-muted-foreground text-sm mb-2 font-medium">These links will be shown to users after a <span className="font-bold text-green-600">positive</span> review. Add your business's public review pages (e.g., Google, Facebook, etc.).</p>
+            {socialReviewLinks.map((link, idx) => (
+              <div key={idx} className="flex gap-2 items-center bg-gray-50 rounded p-2 mb-2">
+                {/* Optional: Add platform icon if recognized */}
+                {link.name.toLowerCase().includes('google') && (
+                  <img src="/logo.png" alt="Google" className="h-6 w-6" />
+                )}
+                {link.name.toLowerCase().includes('facebook') && (
+                  <svg className="h-6 w-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M22.675 0h-21.35C.6 0 0 .6 0 1.326v21.348C0 23.4.6 24 1.326 24H12.82v-9.294H9.692v-3.622h3.127V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.797.143v3.24l-1.918.001c-1.504 0-1.797.715-1.797 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116C23.4 24 24 23.4 24 22.674V1.326C24 .6 23.4 0 22.675 0"/></svg>
+                )}
+                <input
+                  type="text"
+                  placeholder="Platform Name (e.g. Google)"
+                  value={link.name}
+                  onChange={e => setSocialReviewLinks(links => links.map((l, i) => i === idx ? { ...l, name: e.target.value } : l))}
+                  className="flex-1 px-2 py-1 border rounded"
+                />
+                <input
+                  type="url"
+                  placeholder="Review URL"
+                  value={link.url}
+                  onChange={e => setSocialReviewLinks(links => links.map((l, i) => i === idx ? { ...l, url: e.target.value } : l))}
+                  className="flex-1 px-2 py-1 border rounded"
+                />
+                <Button type="button" variant="outline" size="icon" onClick={() => setSocialReviewLinks(links => links.filter((_, i) => i !== idx))} title="Remove link">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
           </div>
 
           {/* Form Actions */}

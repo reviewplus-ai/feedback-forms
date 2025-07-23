@@ -10,6 +10,16 @@ import { Info, Edit, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useRouter } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Plus } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+} from '@/components/ui/dialog'
 
 interface CustomTemplate {
   id: string
@@ -57,6 +67,7 @@ export default function FeedbackRequestPage() {
   const [createStatus, setCreateStatus] = useState<string | null>(null)
   const [authToken, setAuthToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
   const supabase = createClientComponentClient()
   const router = useRouter()
 
@@ -67,7 +78,7 @@ export default function FeedbackRequestPage() {
         const { data: { session } } = await supabase.auth.getSession()
         if (!session) {
           // Redirect to login if no session
-          router.push('/login')
+          router.push('/login') 
           return
         }
         setAuthToken(session.access_token)
@@ -598,22 +609,35 @@ export default function FeedbackRequestPage() {
     )
   }
 
-  return (
-    <div className="flex-1 space-y-6 px-4 sm:px-4 md:px-6 pb-6">
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between mt-2 mb-2">
-        <div>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight flex items-center gap-2">
-            Feedback Request via WhatsApp
-            <span title="Send WhatsApp feedback requests using your custom templates. Variables will be replaced with your input." className="ml-1 cursor-pointer"><Info size={18} /></span>
-          </h2>
-          <p className="text-sm sm:text-base md:text-lg text-muted-foreground mt-1">
-            Send personalized feedback requests to your customers directly on WhatsApp using your own custom templates.
-          </p>
-        </div>
-      </div>
+  // NEW: Search/filter state
+  const filteredTemplates = templates.filter(t =>
+    t.name.toLowerCase().includes(search.toLowerCase()) ||
+    t.description.toLowerCase().includes(search.toLowerCase())
+  )
 
-      <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
-        <Card className="col-span-1 border-none shadow-sm hover:shadow-md transition-shadow">
+  return (
+    <div className="relative min-h-screen flex flex-col gap-8 p-4 md:p-8 bg-gradient-to-br from-[#f8fafc] to-[#e0e7ef] dark:from-[#181c24] dark:to-[#232a36]">
+      {/* Floating Action Button */}
+      <motion.button
+        className="fixed bottom-8 right-8 z-50 w-16 h-16 rounded-full bg-gradient-to-tr from-green-400 to-blue-500 shadow-xl flex items-center justify-center text-white text-3xl hover:scale-110 active:scale-95 transition-transform border-4 border-white/30 backdrop-blur-lg"
+        onClick={() => setShowCreate(true)}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.96 }}
+        title="Create New Template"
+      >
+        <Plus size={36} />
+      </motion.button>
+
+      <div className="flex flex-col md:flex-row gap-8">
+        {/* Left: Send WhatsApp Message */}
+        <motion.div
+          className="flex-1 max-w-xl mx-auto glass-card p-8 rounded-3xl shadow-2xl border border-white/30 backdrop-blur-lg bg-white/60 dark:bg-[#232a36]/70"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
           <CardHeader>
             <CardTitle>Send Feedback Request</CardTitle>
             <CardDescription>Enter customer details and send a WhatsApp feedback request.</CardDescription>
@@ -675,23 +699,18 @@ export default function FeedbackRequestPage() {
                 </div>
               </div>
               
-              {selectedTemplate && selectedTemplate.variables.length > 0 && (
-                <div>
-                  <label className="block text-sm font-medium mb-1">Template Variables</label>
-                  {selectedTemplate.variables.map(variable => (
-                    <div key={variable} className="flex items-center gap-2 mb-2">
-                      <Input
-                        type="text"
-                        placeholder={`{{${variable}}}`}
-                        value={templateVars[variable] || ''}
-                        onChange={e => handleTemplateVarChange(variable, e.target.value)}
-                        required
-                      />
-                      <span title={`This will replace {{${variable}}} in the template.`}><Info size={14} /></span>
-                    </div>
-                  ))}
+              {selectedTemplate && Array.from(new Set(selectedTemplate.variables)).map(variable => (
+                <div key={variable} className="flex items-center gap-2 mb-2">
+                  <Input
+                    type="text"
+                    placeholder={`{{${variable}}}`}
+                    value={templateVars[variable] || ''}
+                    onChange={e => handleTemplateVarChange(variable, e.target.value)}
+                    required
+                  />
+                  <span title={`This will replace {{${variable}}} in the template.`}><Info size={14} /></span>
                 </div>
-              )}
+              ))}
               
               <Button type="submit" className="w-full" disabled={!canSend}>
                 {sending ? <span className="animate-spin mr-2">⏳</span> : null}
@@ -716,430 +735,135 @@ export default function FeedbackRequestPage() {
               </div>
             )}
           </CardContent>
-        </Card>
+        </motion.div>
 
-        <Card className="col-span-1 border-none shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader>
-            <div className="flex items-center justify-between">
+        {/* Right: Template Gallery */}
+        <motion.div
+          className="flex-1 min-w-[340px] glass-card p-8 rounded-3xl shadow-2xl border border-white/30 backdrop-blur-lg bg-white/60 dark:bg-[#232a36]/70"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+        >
+          <div className="flex items-center justify-between mb-6">
               <div>
-                <CardTitle>Custom Templates</CardTitle>
-                <CardDescription>Manage your WhatsApp message templates.</CardDescription>
-                {templates.length > 0 && (
-                  <div className="mt-2 text-sm">
-                    {(() => {
-                      const needsFixing = templates.filter(t => !t.whatsapp_template_name).length
-                      const approved = templates.filter(t => t.status === 'APPROVED').length
-                      const pending = templates.filter(t => t.status === 'PENDING').length
-                      const rejected = templates.filter(t => t.status === 'REJECTED').length
-                      
-                      return (
-                        <div className="flex gap-2 text-xs">
-                          <span className="text-green-600">✅ {approved} Approved</span>
-                          {pending > 0 && <span className="text-yellow-600">⏳ {pending} Pending</span>}
-                          {rejected > 0 && <span className="text-red-600">❌ {rejected} Rejected</span>}
-                          {needsFixing > 0 && <span className="text-red-600">🔧 {needsFixing} Need Fixing</span>}
+              <h2 className="text-2xl font-bold tracking-tight mb-1">Your WhatsApp Templates</h2>
+              <p className="text-muted-foreground text-sm">Manage, edit, and preview your WhatsApp message templates.</p>
                         </div>
-                      )
-                    })()}
+            <Input
+              className="w-48 bg-white/70 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400"
+              placeholder="Search templates..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
                   </div>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <Button 
-                  onClick={fixTemplates}
-                  variant="outline" 
-                  size="sm"
-                  disabled={templates.filter(t => !t.whatsapp_template_name).length === 0}
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+            <AnimatePresence>
+              {filteredTemplates.length === 0 && (
+                <motion.div className="col-span-2 text-center text-gray-400 py-12" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                  No templates found.
+                </motion.div>
+              )}
+              {filteredTemplates.map(template => (
+                <motion.div
+                  key={template.id}
+                  className="relative bg-white/80 dark:bg-[#232a36]/80 rounded-2xl p-6 shadow-lg border border-white/30 flex flex-col gap-3 hover:shadow-2xl transition-shadow"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  whileHover={{ scale: 1.02 }}
                 >
-                  Fix Templates
-                </Button>
-                <Button 
-                  onClick={refreshTemplateStatuses}
-                  variant="outline" 
-                  size="sm"
-                >
-                  Refresh Status
-                </Button>
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="inline-block w-10 h-10 rounded-full bg-gradient-to-tr from-green-400 to-blue-500 text-white flex items-center justify-center font-bold text-lg shadow-md border-2 border-white/40">
+                      <span className="sr-only">WA</span>
+                      <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#25D366" /><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.472-.148-.67.15-.198.297-.767.967-.94 1.164-.173.198-.347.223-.644.075-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.372-.025-.521-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.007-.372-.009-.571-.009-.198 0-.52.075-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.099 3.205 5.077 4.372.71.306 1.263.489 1.695.625.712.227 1.36.195 1.872.118.571-.085 1.758-.719 2.007-1.413.248-.694.248-1.288.173-1.413-.074-.124-.272-.198-.57-.347z" fill="#fff"/></svg>
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-lg truncate" title={template.name}>{template.name}</h3>
+                      <p className="text-xs text-muted-foreground truncate" title={template.description}>{template.description}</p>
               </div>
+                    {/* Status badge */}
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${
+                      template.status === 'APPROVED' ? 'bg-green-100 text-green-700' :
+                      template.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
+                      template.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
+                      'bg-gray-100 text-gray-500'
+                    }`}>{template.status || 'UNKNOWN'}</span>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {templates.length === 0 ? (
-                <p className="text-muted-foreground text-sm">No templates created yet. Create your first template to get started.</p>
-              ) : (
-                templates.map(template => (
-                  <div key={template.id} className="border rounded p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium">{template.name}</h4>
-                      <div className="flex gap-1">
+                  <div className="flex gap-2 mt-2">
                         <Button
                           type="button"
                           size="sm"
                           variant="ghost"
+                      className="neumorphic-btn"
                           onClick={() => startEditTemplate(template)}
+                      title="Edit"
                         >
-                          <Edit size={14} />
+                      <Edit size={16} />
                         </Button>
                         <Button
                           type="button"
                           size="sm"
                           variant="ghost"
+                      className="neumorphic-btn"
                           onClick={() => handleDeleteTemplate(template.id)}
+                      title="Delete"
                         >
-                          <Trash2 size={14} />
+                      <Trash2 size={16} />
                         </Button>
                       </div>
+                  <div className="mt-2 text-xs text-muted-foreground">
+                    Variables: {template.variables.length > 0 ? template.variables.join(', ') : 'None'}
                     </div>
-                    <p className="text-sm text-muted-foreground mb-2">{template.description}</p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                      <Badge variant="outline" className="text-xs">{template.category}</Badge>
-                      <Badge variant="secondary" className="text-xs">{template.survey_type || 'CUSTOM'}</Badge>
-                      <Badge variant="outline" className="text-xs">{template.language || 'en'}</Badge>
-                      {template.whatsapp_template_name && (
-                        <Badge variant="default" className="text-xs bg-green-600">WhatsApp Template</Badge>
-                      )}
-                      {template.status && (
-                        <Badge 
-                          variant={template.status === 'APPROVED' ? 'default' : 'secondary'} 
-                          className={`text-xs ${
-                            template.status === 'APPROVED' ? 'bg-green-600' : 
-                            template.status === 'REJECTED' ? 'bg-red-600' : 
-                            template.status === 'PENDING' ? 'bg-yellow-600' : 'bg-gray-600'
-                          }`}
-                        >
-                          {template.status}
-                        </Badge>
-                      )}
+                </motion.div>
+              ))}
+            </AnimatePresence>
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      <div>Variables: {template.variables.length > 0 ? template.variables.join(', ') : 'None'}</div>
-                      {template.whatsapp_template_name && (
-                        <div>WhatsApp Template: {template.whatsapp_template_name}</div>
-                      )}
-                      {!template.whatsapp_template_name && (
-                        <div className="text-red-600 mt-1">
-                          ⚠️ Template not properly configured for WhatsApp. Click "Fix Templates" to resolve.
-                        </div>
-                      )}
-                      {template.status === 'REJECTED' && (
-                        <div className="text-red-600 mt-1">
-                          ⚠️ Template was rejected by WhatsApp. Check content and try again.
-                        </div>
-                      )}
-                      {template.status === 'PENDING' && (
-                        <div className="text-yellow-600 mt-1">
-                          ⏳ Template is pending approval by WhatsApp.
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        </motion.div>
       </div>
 
-      {/* Create Template Modal */}
-      {showCreate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded shadow-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-bold mb-4">Create New Template</h3>
-            <form className="space-y-3" onSubmit={handleCreateTemplate}>
-              <div>
-                <label className="block text-sm font-medium mb-1">Name</label>
-                <Input 
-                  value={newTemplate.name} 
-                  onChange={e => setNewTemplate(t => ({ ...t, name: e.target.value }))} 
-                  placeholder="e.g., feedback_request"
-                  required 
-                />
-                <p className="text-xs text-muted-foreground mt-1">Use lowercase, letters, numbers, and underscores only</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Category</label>
-                <select 
-                  className="block w-full border rounded px-2 py-1" 
-                  value={newTemplate.category} 
-                  onChange={e => setNewTemplate(t => ({ ...t, category: e.target.value }))}
-                >
-                  <option value="UTILITY">UTILITY</option>
-                  <option value="MARKETING">MARKETING</option>
-                  <option value="AUTHENTICATION">AUTHENTICATION</option>
-                </select>
-                <p className="text-xs text-muted-foreground mt-1">Choose the appropriate category for your template</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Survey Type</label>
-                <select 
-                  className="block w-full border rounded px-2 py-1" 
-                  value={newTemplate.survey_type} 
-                  onChange={e => setNewTemplate(t => ({ ...t, survey_type: e.target.value as any }))}
-                >
-                  <option value="CUSTOM">Custom Survey</option>
-                  <option value="NPS">Net Promoter Score (NPS)</option>
-                  <option value="CSAT">Customer Satisfaction (CSAT)</option>
-                  <option value="CES">Customer Effort Score (CES)</option>
-                </select>
-                <p className="text-xs text-muted-foreground mt-1">Choose the type of survey you want to create</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Language</label>
-                <select 
-                  className="block w-full border rounded px-2 py-1" 
-                  value={newTemplate.language} 
-                  onChange={e => setNewTemplate(t => ({ ...t, language: e.target.value }))}
-                >
-                  <option value="en">English (US)</option>
-                  <option value="es">Spanish (ES)</option>
-                  <option value="fr">French (FR)</option>
-                  <option value="de">German (DE)</option>
-                  <option value="ar">Arabic (AR)</option>
-                  <option value="pt">Portuguese (BR)</option>
-                  <option value="it">Italian (IT)</option>
-                  <option value="ja">Japanese (JP)</option>
-                  <option value="ko">Korean (KR)</option>
-                  <option value="zh">Chinese (CN)</option>
-                  <option value="ru">Russian (RU)</option>
-                  <option value="tr">Turkish (TR)</option>
-                  <option value="nl">Dutch (NL)</option>
-                  <option value="pl">Polish (PL)</option>
-                  <option value="th">Thai (TH)</option>
-                  <option value="vi">Vietnamese (VN)</option>
-                  <option value="id">Indonesian (ID)</option>
-                  <option value="ms">Malay (MY)</option>
-                  <option value="tl">Filipino (PH)</option>
-                </select>
-                <p className="text-xs text-muted-foreground mt-1">Select a language supported by WhatsApp Business API</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Description</label>
-                <Input 
-                  value={newTemplate.description} 
-                  onChange={e => setNewTemplate(t => ({ ...t, description: e.target.value }))} 
-                  placeholder="Brief description of this template"
-                  required 
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Body</label>
-                <Textarea 
-                  value={newTemplate.body} 
-                  onChange={e => setNewTemplate(t => ({ ...t, body: e.target.value }))} 
-                  placeholder="Your message body. Use {{variable_name}} for variables."
-                  required 
-                  rows={4}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Header (optional)</label>
-                <Input 
-                  value={newTemplate.header} 
-                  onChange={e => setNewTemplate(t => ({ ...t, header: e.target.value }))} 
-                  placeholder="Header text"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Footer (optional)</label>
-                <Input 
-                  value={newTemplate.footer} 
-                  onChange={e => setNewTemplate(t => ({ ...t, footer: e.target.value }))} 
-                  placeholder="Footer text"
-                />
-              </div>
-              {/* URL Buttons */}
-              <div>
-                <label className="block text-sm font-medium mb-1">URL Buttons (optional)</label>
-                {newTemplate.buttons.map((btn, idx) => (
-                  <div key={idx} className="flex gap-2 items-center mb-2">
-                    <Input
-                      className="w-1/3"
-                      placeholder="Button Text"
-                      value={btn.text}
-                      onChange={e => setNewTemplate(t => {
-                        const buttons = [...t.buttons]
-                        buttons[idx].text = e.target.value
-                        return { ...t, buttons }
-                      })}
-                    />
-                    <Input
-                      className="w-2/3"
-                      placeholder="Button URL (can use {{variable}})"
-                      value={btn.url}
-                      onChange={e => setNewTemplate(t => {
-                        const buttons = [...t.buttons]
-                        buttons[idx].url = e.target.value
-                        return { ...t, buttons }
-                      })}
-                    />
-                    <Button type="button" size="icon" variant="ghost" onClick={() => setNewTemplate(t => ({ ...t, buttons: t.buttons.filter((_, i) => i !== idx) }))}>
-                      ×
-                    </Button>
-                  </div>
-                ))}
-                <Button type="button" size="sm" variant="secondary" className="mt-1" onClick={() => setNewTemplate(t => ({ ...t, buttons: [...t.buttons, { text: '', url: '' }] }))}>
-                  + Add URL Button
-                </Button>
-              </div>
-              <div className="flex gap-2 mt-4">
-                <Button type="submit" disabled={creating}>{creating ? 'Creating...' : 'Create'}</Button>
-                <Button type="button" variant="secondary" onClick={() => setShowCreate(false)}>Cancel</Button>
-              </div>
-              {createStatus && <div className="text-sm mt-2 text-green-600">{createStatus}</div>}
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Use Dialog for modal */}
+      <Dialog open={showCreate || showEdit} onOpenChange={val => { setShowCreate(false); setShowEdit(false); }}>
+        <DialogContent className="bg-white/80 dark:bg-[#232a36]/90 rounded-3xl shadow-2xl border border-white/30 glass-card">
+          <DialogHeader>
+            <DialogTitle>
+              {showEdit && editingTemplate ? `Edit Template: ${editingTemplate.name}` : 'Create New Template'}
+            </DialogTitle>
+            <DialogDescription>
+              Fill out the details below.
+            </DialogDescription>
+          </DialogHeader>
+          <CreateEditTemplateForm
+            isEdit={showEdit}
+            template={editingTemplate}
+            newTemplate={newTemplate}
+            setNewTemplate={setNewTemplate}
+            creating={creating}
+            updating={updating}
+            createStatus={createStatus}
+            onSubmit={showEdit ? handleEditTemplate : handleCreateTemplate}
+            onCancel={() => { setShowCreate(false); setShowEdit(false); }}
+          />
+        </DialogContent>
+      </Dialog>
 
-      {/* Edit Template Modal */}
-      {showEdit && editingTemplate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded shadow-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-bold mb-4">Edit Template: {editingTemplate.name}</h3>
-            <form className="space-y-3" onSubmit={handleEditTemplate}>
-              <div>
-                <label className="block text-sm font-medium mb-1">Name</label>
-                <Input 
-                  value={newTemplate.name} 
-                  onChange={e => setNewTemplate(t => ({ ...t, name: e.target.value }))} 
-                  placeholder="e.g., feedback_request"
-                  required 
-                />
-                <p className="text-xs text-muted-foreground mt-1">Use lowercase, letters, numbers, and underscores only</p>
+      {/* WhatsApp Preview (chat bubble style) */}
+      {selectedTemplate && (
+        <motion.div
+          className="fixed bottom-8 left-8 z-40 max-w-xs w-full"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="flex items-end gap-2">
+            <span className="inline-block w-10 h-10 rounded-full bg-gradient-to-tr from-green-400 to-blue-500 text-white flex items-center justify-center font-bold text-lg shadow-md border-2 border-white/40">
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#25D366" /><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.472-.148-.67.15-.198.297-.767.967-.94 1.164-.173.198-.347.223-.644.075-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.372-.025-.521-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.007-.372-.009-.571-.009-.198 0-.52.075-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.099 3.205 5.077 4.372.71.306 1.263.489 1.695.625.712.227 1.36.195 1.872.118.571-.085 1.758-.719 2.007-1.413.248-.694.248-1.288.173-1.413-.074-.124-.272-.198-.57-.347z" fill="#fff"/></svg>
+            </span>
+            <div className="bg-white/90 dark:bg-[#232a36]/90 rounded-2xl p-4 shadow-xl border border-white/30 glass-card relative">
+              <div className="text-sm text-gray-800 dark:text-gray-100 whitespace-pre-line" style={{ fontFamily: 'Segoe UI, Arial, sans-serif' }}>
+                {buildPreviewMessage()}
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Category</label>
-                <select 
-                  className="block w-full border rounded px-2 py-1" 
-                  value={newTemplate.category} 
-                  onChange={e => setNewTemplate(t => ({ ...t, category: e.target.value }))}
-                >
-                  <option value="UTILITY">UTILITY</option>
-                  <option value="MARKETING">MARKETING</option>
-                  <option value="AUTHENTICATION">AUTHENTICATION</option>
-                </select>
-                <p className="text-xs text-muted-foreground mt-1">Choose the appropriate category for your template</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Survey Type</label>
-                <select 
-                  className="block w-full border rounded px-2 py-1" 
-                  value={newTemplate.survey_type} 
-                  onChange={e => setNewTemplate(t => ({ ...t, survey_type: e.target.value as any }))}
-                >
-                  <option value="CUSTOM">Custom Survey</option>
-                  <option value="NPS">Net Promoter Score (NPS)</option>
-                  <option value="CSAT">Customer Satisfaction (CSAT)</option>
-                  <option value="CES">Customer Effort Score (CES)</option>
-                </select>
-                <p className="text-xs text-muted-foreground mt-1">Choose the type of survey you want to create</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Language</label>
-                <select 
-                  className="block w-full border rounded px-2 py-1" 
-                  value={newTemplate.language} 
-                  onChange={e => setNewTemplate(t => ({ ...t, language: e.target.value }))}
-                >
-                  <option value="en">English (US)</option>
-                  <option value="es">Spanish (ES)</option>
-                  <option value="fr">French (FR)</option>
-                  <option value="de">German (DE)</option>
-                  <option value="ar">Arabic (AR)</option>
-                  <option value="pt">Portuguese (BR)</option>
-                  <option value="it">Italian (IT)</option>
-                  <option value="ja">Japanese (JP)</option>
-                  <option value="ko">Korean (KR)</option>
-                  <option value="zh">Chinese (CN)</option>
-                  <option value="ru">Russian (RU)</option>
-                  <option value="tr">Turkish (TR)</option>
-                  <option value="nl">Dutch (NL)</option>
-                  <option value="pl">Polish (PL)</option>
-                  <option value="th">Thai (TH)</option>
-                  <option value="vi">Vietnamese (VN)</option>
-                  <option value="id">Indonesian (ID)</option>
-                  <option value="ms">Malay (MY)</option>
-                  <option value="tl">Filipino (PH)</option>
-                </select>
-                <p className="text-xs text-muted-foreground mt-1">Select a language supported by WhatsApp Business API</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Description</label>
-                <Input 
-                  value={newTemplate.description} 
-                  onChange={e => setNewTemplate(t => ({ ...t, description: e.target.value }))} 
-                  placeholder="Brief description of this template"
-                  required 
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Body</label>
-                <Textarea 
-                  value={newTemplate.body} 
-                  onChange={e => setNewTemplate(t => ({ ...t, body: e.target.value }))} 
-                  placeholder="Your message body. Use {{variable_name}} for variables."
-                  required 
-                  rows={4}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Header (optional)</label>
-                <Input 
-                  value={newTemplate.header} 
-                  onChange={e => setNewTemplate(t => ({ ...t, header: e.target.value }))} 
-                  placeholder="Header text"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Footer (optional)</label>
-                <Input 
-                  value={newTemplate.footer} 
-                  onChange={e => setNewTemplate(t => ({ ...t, footer: e.target.value }))} 
-                  placeholder="Footer text"
-                />
-              </div>
-              {/* URL Buttons */}
-              <div>
-                <label className="block text-sm font-medium mb-1">URL Buttons (optional)</label>
-                {newTemplate.buttons.map((btn, idx) => (
-                  <div key={idx} className="flex gap-2 items-center mb-2">
-                    <Input
-                      className="w-1/3"
-                      placeholder="Button Text"
-                      value={btn.text}
-                      onChange={e => setNewTemplate(t => {
-                        const buttons = [...t.buttons]
-                        buttons[idx].text = e.target.value
-                        return { ...t, buttons }
-                      })}
-                    />
-                    <Input
-                      className="w-2/3"
-                      placeholder="Button URL (can use {{variable}})"
-                      value={btn.url}
-                      onChange={e => setNewTemplate(t => {
-                        const buttons = [...t.buttons]
-                        buttons[idx].url = e.target.value
-                        return { ...t, buttons }
-                      })}
-                    />
-                    <Button type="button" size="icon" variant="ghost" onClick={() => setNewTemplate(t => ({ ...t, buttons: t.buttons.filter((_, i) => i !== idx) }))}>
-                      ×
-                    </Button>
-                  </div>
-                ))}
-                <Button type="button" size="sm" variant="secondary" className="mt-1" onClick={() => setNewTemplate(t => ({ ...t, buttons: [...t.buttons, { text: '', url: '' }] }))}>
-                  + Add URL Button
-                </Button>
-              </div>
-              <div className="flex gap-2 mt-4">
-                <Button type="submit" disabled={updating}>{updating ? 'Updating...' : 'Update'}</Button>
-                <Button type="button" variant="secondary" onClick={() => setShowEdit(false)}>Cancel</Button>
-              </div>
-            </form>
-          </div>
-        </div>
+        </motion.div>
       )}
 
       <Card className="mt-6 border-none shadow-sm">
@@ -1532,5 +1256,175 @@ function AutomationTestSection({ authToken }: { authToken: string | null }) {
         </p>
       )}
     </div>
+  )
+} 
+
+// Extract CreateEditTemplateForm as a separate component
+function CreateEditTemplateForm({
+  isEdit,
+  template,
+  newTemplate,
+  setNewTemplate,
+  creating,
+  updating,
+  createStatus,
+  onSubmit,
+  onCancel
+}: {
+  isEdit: boolean,
+  template: any,
+  newTemplate: any,
+  setNewTemplate: any,
+  creating: boolean,
+  updating: boolean,
+  createStatus: string | null,
+  onSubmit: (e: React.FormEvent) => void,
+  onCancel: () => void
+}) {
+  return (
+    <form className="space-y-3" onSubmit={onSubmit}>
+      <div>
+        <label className="block text-sm font-medium mb-1">Name</label>
+        <Input 
+          value={newTemplate.name} 
+          onChange={e => setNewTemplate((t: any) => ({ ...t, name: e.target.value }))} 
+          placeholder="e.g., feedback_request"
+          required 
+        />
+        <p className="text-xs text-muted-foreground mt-1">Use lowercase, letters, numbers, and underscores only</p>
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">Category</label>
+        <select 
+          className="block w-full border rounded px-2 py-1" 
+          value={newTemplate.category} 
+          onChange={e => setNewTemplate((t: any) => ({ ...t, category: e.target.value }))}
+        >
+          <option value="UTILITY">UTILITY</option>
+          <option value="MARKETING">MARKETING</option>
+          <option value="AUTHENTICATION">AUTHENTICATION</option>
+        </select>
+        <p className="text-xs text-muted-foreground mt-1">Choose the appropriate category for your template</p>
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">Survey Type</label>
+        <select 
+          className="block w-full border rounded px-2 py-1" 
+          value={newTemplate.survey_type} 
+          onChange={e => setNewTemplate((t: any) => ({ ...t, survey_type: e.target.value }))}
+        >
+          <option value="CUSTOM">Custom Survey</option>
+          <option value="NPS">Net Promoter Score (NPS)</option>
+          <option value="CSAT">Customer Satisfaction (CSAT)</option>
+          <option value="CES">Customer Effort Score (CES)</option>
+        </select>
+        <p className="text-xs text-muted-foreground mt-1">Choose the type of survey you want to create</p>
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">Language</label>
+        <select 
+          className="block w-full border rounded px-2 py-1" 
+          value={newTemplate.language} 
+          onChange={e => setNewTemplate((t: any) => ({ ...t, language: e.target.value }))}
+        >
+          <option value="en">English (US)</option>
+          <option value="es">Spanish (ES)</option>
+          <option value="fr">French (FR)</option>
+          <option value="de">German (DE)</option>
+          <option value="ar">Arabic (AR)</option>
+          <option value="pt">Portuguese (BR)</option>
+          <option value="it">Italian (IT)</option>
+          <option value="ja">Japanese (JP)</option>
+          <option value="ko">Korean (KR)</option>
+          <option value="zh">Chinese (CN)</option>
+          <option value="ru">Russian (RU)</option>
+          <option value="tr">Turkish (TR)</option>
+          <option value="nl">Dutch (NL)</option>
+          <option value="pl">Polish (PL)</option>
+          <option value="th">Thai (TH)</option>
+          <option value="vi">Vietnamese (VN)</option>
+          <option value="id">Indonesian (ID)</option>
+          <option value="ms">Malay (MY)</option>
+          <option value="tl">Filipino (PH)</option>
+        </select>
+        <p className="text-xs text-muted-foreground mt-1">Select a language supported by WhatsApp Business API</p>
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">Description</label>
+        <Input 
+          value={newTemplate.description} 
+          onChange={e => setNewTemplate((t: any) => ({ ...t, description: e.target.value }))} 
+          placeholder="Brief description of this template"
+          required 
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">Body</label>
+        <Textarea 
+          value={newTemplate.body} 
+          onChange={e => setNewTemplate((t: any) => ({ ...t, body: e.target.value }))} 
+          placeholder="Your message body. Use {{variable_name}} for variables."
+          required 
+          rows={4}
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">Header (optional)</label>
+        <Input 
+          value={newTemplate.header} 
+          onChange={e => setNewTemplate((t: any) => ({ ...t, header: e.target.value }))} 
+          placeholder="Header text"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">Footer (optional)</label>
+        <Input 
+          value={newTemplate.footer} 
+          onChange={e => setNewTemplate((t: any) => ({ ...t, footer: e.target.value }))} 
+          placeholder="Footer text"
+        />
+      </div>
+      {/* URL Buttons */}
+      <div>
+        <label className="block text-sm font-medium mb-1">URL Buttons (optional)</label>
+        {newTemplate.buttons.map((btn: any, idx: number) => (
+          <div key={idx} className="flex gap-2 items-center mb-2">
+            <Input
+              className="w-1/3"
+              placeholder="Button Text"
+              value={btn.text}
+              onChange={e => setNewTemplate((t: any) => {
+                const buttons = [...t.buttons]
+                buttons[idx].text = e.target.value
+                return { ...t, buttons }
+              })}
+            />
+            <Input
+              className="w-2/3"
+              placeholder="Button URL (can use {{variable}})"
+              value={btn.url}
+              onChange={e => setNewTemplate((t: any) => {
+                const buttons = [...t.buttons]
+                buttons[idx].url = e.target.value
+                return { ...t, buttons }
+              })}
+            />
+            <Button type="button" size="icon" variant="ghost" onClick={() => setNewTemplate((t: any) => ({ ...t, buttons: t.buttons.filter((_: any, i: number) => i !== idx) }))}>
+              ×
+            </Button>
+          </div>
+        ))}
+        <Button type="button" size="sm" variant="secondary" className="mt-1" onClick={() => setNewTemplate((t: any) => ({ ...t, buttons: [...t.buttons, { text: '', url: '' }] }))}>
+          + Add URL Button
+        </Button>
+      </div>
+      <div className="flex gap-2 mt-4">
+        <Button type="submit" disabled={isEdit ? updating : creating}>
+          {isEdit ? (updating ? 'Updating...' : 'Update') : (creating ? 'Creating...' : 'Create')}
+        </Button>
+        <Button type="button" variant="secondary" onClick={onCancel}>Cancel</Button>
+      </div>
+      {createStatus && <div className="text-sm mt-2 text-green-600">{createStatus}</div>}
+    </form>
   )
 } 

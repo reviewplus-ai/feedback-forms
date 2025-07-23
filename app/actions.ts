@@ -93,6 +93,18 @@ export async function createForm(formData: FormData) {
     const negativeRedirectUrl = formData.get('negativeRedirectUrl') as string
     const negativeRedirectType = formData.get('negativeRedirectType') as string
     const negativeFeedbackQuestionsJson = formData.get('negativeFeedbackQuestions') as string
+    const neutralRedirectType = formData.get('neutralRedirectType') as string
+    const neutralRedirectUrl = formData.get('neutralRedirectUrl') as string
+    const neutralFeedbackQuestionsJson = formData.get('neutralFeedbackQuestions') as string
+    const socialReviewLinksJson = formData.get('socialReviewLinks') as string
+    let socialReviewLinks: { name: string; url: string }[] = []
+    if (socialReviewLinksJson) {
+      try {
+        socialReviewLinks = JSON.parse(socialReviewLinksJson)
+      } catch (e) {
+        socialReviewLinks = []
+      }
+    }
 
     // Validate required fields
     if (!companyName || !name || !slug || !welcomeMessage || !positiveRedirectUrl) {
@@ -138,6 +150,19 @@ export async function createForm(formData: FormData) {
       }
     }
 
+    // Parse neutral feedback questions
+    let neutralFeedbackQuestions: string[] = []
+    if (neutralRedirectType === 'internal' && neutralFeedbackQuestionsJson) {
+      try {
+        neutralFeedbackQuestions = JSON.parse(neutralFeedbackQuestionsJson)
+        if (!Array.isArray(neutralFeedbackQuestions)) {
+          return { success: false, error: 'Invalid neutral feedback questions format' }
+        }
+      } catch (e) {
+        return { success: false, error: 'Invalid neutral feedback questions format' }
+      }
+    }
+
     // Create the form
     const { data: form, error } = await supabase
       .from('review_forms')
@@ -151,7 +176,11 @@ export async function createForm(formData: FormData) {
         positive_redirect_url: positiveRedirectUrl,
         negative_redirect_type: negativeRedirectType,
         negative_redirect_url: negativeRedirectType === 'external' ? negativeRedirectUrl : null,
-        negative_feedback_questions: negativeFeedbackQuestions
+        negative_feedback_questions: negativeFeedbackQuestions,
+        neutral_redirect_type: neutralRedirectType,
+        neutral_redirect_url: neutralRedirectType === 'external' ? neutralRedirectUrl : null,
+        neutral_feedback_questions: neutralFeedbackQuestions,
+        social_review_links: socialReviewLinks
       })
       .select()
       .single()
@@ -278,8 +307,15 @@ export async function submitReview(formData: FormData) {
       throw new Error('Failed to get form details: ' + formError?.message)
     }
 
-    // Determine if the review is positive based on the current threshold
-    const isPositive = rating >= form.rating_threshold
+    // Determine if the review is positive, negative, or neutral
+    let isPositive: boolean | null = null
+    if (rating >= form.rating_threshold) {
+      isPositive = true
+    } else if (rating < form.rating_threshold && rating !== 3) {
+      isPositive = false
+    } else if (rating === 3) {
+      isPositive = null
+    }
 
     // Parse contact information
     let contactEmail = null
@@ -303,6 +339,21 @@ export async function submitReview(formData: FormData) {
       }
     }
 
+    // Parse neutral feedback fields
+    let neutralFeedbackCategories = []
+    let neutralOtherFeedback = null
+    if (isPositive === null) {
+      const nfc = formData.get('neutralFeedbackCategories') as string
+      if (nfc) {
+        try {
+          neutralFeedbackCategories = JSON.parse(nfc)
+        } catch (e) {
+          console.error('Error parsing neutral feedback categories:', e)
+        }
+      }
+      neutralOtherFeedback = formData.get('neutralOtherFeedback') as string || null
+    }
+
     // Create the review with the correct column names based on the actual database schema
     const { data: review, error: reviewError } = await supabase
       .from('reviews')
@@ -317,7 +368,9 @@ export async function submitReview(formData: FormData) {
           contact_status: 'pending',
           feedback_categories: categories,
           feedback_text: otherFeedback || null,
-          is_positive: isPositive
+          is_positive: isPositive,
+          neutral_feedback_categories: isPositive === null ? neutralFeedbackCategories : undefined,
+          neutral_other_feedback: isPositive === null ? neutralOtherFeedback : undefined
         }
       ])
       .select()
@@ -420,6 +473,18 @@ export async function updateForm(formData: FormData) {
   const negativeRedirectUrl = formData.get('negativeRedirectUrl')
   const negativeRedirectType = formData.get('negativeRedirectType')
   const negativeFeedbackQuestions = formData.get('negativeFeedbackQuestions')
+  const neutralRedirectType = formData.get('neutralRedirectType') as string
+  const neutralRedirectUrl = formData.get('neutralRedirectUrl') as string
+  const neutralFeedbackQuestions = formData.get('neutralFeedbackQuestions')
+  const socialReviewLinksJson = formData.get('socialReviewLinks') as string
+  let socialReviewLinks: { name: string; url: string }[] = []
+  if (socialReviewLinksJson) {
+    try {
+      socialReviewLinks = JSON.parse(socialReviewLinksJson)
+    } catch (e) {
+      socialReviewLinks = []
+    }
+  }
 
   // Validate required fields
   if (!welcomeMessage || !positiveRedirectUrl) {
@@ -445,6 +510,16 @@ export async function updateForm(formData: FormData) {
     }
   }
 
+  // Parse neutral feedback questions
+  let parsedNeutralQuestions: string[] = []
+  if (neutralRedirectType === 'internal' && neutralFeedbackQuestions) {
+    try {
+      parsedNeutralQuestions = JSON.parse(neutralFeedbackQuestions.toString())
+    } catch (e) {
+      console.error('Error parsing neutral feedback questions:', e)
+    }
+  }
+
   // Update the form
   const { error: updateError } = await supabase
     .from('review_forms')
@@ -455,6 +530,10 @@ export async function updateForm(formData: FormData) {
       negative_redirect_url: negativeRedirectUrl,
       negative_redirect_type: negativeRedirectType || 'internal',
       negative_feedback_questions: parsedQuestions,
+      neutral_redirect_type: neutralRedirectType,
+      neutral_redirect_url: neutralRedirectType === 'external' ? neutralRedirectUrl : null,
+      neutral_feedback_questions: parsedNeutralQuestions,
+      social_review_links: socialReviewLinks,
       updated_at: new Date().toISOString()
     })
     .eq('id', formId)

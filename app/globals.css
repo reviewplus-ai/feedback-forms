@@ -177,3 +177,22 @@ body {
   opacity: 1;
   transform: translateY(0);
 }
+
+/* --- WhatsApp Template UI Modern Styles --- */
+.glass-card {
+  backdrop-filter: blur(16px) saturate(180%);
+  background: rgba(255,255,255,0.7);
+  box-shadow: 0 8px 32px 0 rgba(31,38,135,0.18);
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255,255,255,0.18);
+}
+.neumorphic-btn {
+  box-shadow: 2px 2px 8px #e0e7ef, -2px -2px 8px #fff;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+  transition: box-shadow 0.2s;
+}
+.neumorphic-btn:active {
+  box-shadow: inset 2px 2px 8px #e0e7ef, inset -2px -2px 8px #fff;
+}
+/* --- End WhatsApp Template UI Modern Styles --- */
